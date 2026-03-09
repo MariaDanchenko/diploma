@@ -46,7 +46,7 @@ public class LoginPage {
 
         enterPassword(password);
         clickContinueButton();
-        return null;
+        return new HomePage(driver);
     }
 
     public String getErrorMessage() {
