@@ -100,11 +100,12 @@ public class TrelloHomePage {
 
     public void search(String text) {
         WebElement searchInputElement = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        searchInputElement.sendKeys(text + Keys.ARROW_DOWN + Keys.ENTER);
+        driver.findElement(searchInput).click();
+        searchInputElement.sendKeys(text);
     }
 
     public String isTextVisible() {
-        WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(input));
+        WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
         return inputField.getText();
     }
 }

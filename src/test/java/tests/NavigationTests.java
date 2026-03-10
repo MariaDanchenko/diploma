@@ -77,7 +77,7 @@ public class NavigationTests extends BaseTest {
     public void testCreateButton() {
         trelloHomePage.clickCreateButton();
 
-        //Проверка, что меню создания откролось
+        //Проверка, что меню создания открылось
         Assert.assertTrue(trelloHomePage.isCreateButtonOpened());
     }
 
