@@ -5,8 +5,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import pages.HomePage;
 import pages.LoginPage;
 import pages.TrelloHomePage;
@@ -21,7 +21,7 @@ public class BaseTest {
     protected HomePage homePage;
     protected TrelloHomePage trelloHomePage;
 
-    @BeforeMethod
+    @BeforeClass
     public void setUp() {
         WebDriverManager.chromedriver().clearDriverCache().setup();
 
@@ -43,7 +43,7 @@ public class BaseTest {
         trelloHomePage = new TrelloHomePage(driver);
     }
 
-    @AfterMethod
+    @AfterClass
     public void tearDown() {
         if (driver != null) {
             driver.quit();

@@ -1,7 +1,9 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -20,6 +22,13 @@ public class TrelloHomePage {
     public By searchInput = By.cssSelector("input[data-testid='cross-product-search-input-skeleton']");
     public By notificationsButton = By.cssSelector("button[data-testid = 'header-notifications-button']");
     public By infoButton = By.cssSelector("button[data-testid = 'header-info-button']");
+    private final By accountMenu = By.cssSelector("#account-menu-account-section-title");
+    private final By infoMenu = By.cssSelector("h3[class = 'oksVR59krTcAPX']");
+    private final By notificationsMenu = By.cssSelector("h2[class = 'HsONwDlXlvyo7z']");
+    private final By boardsHeader = By.cssSelector("h3[class = 'xtkiiaSp5ulDJM']");
+    private final By templatesHeader = By.cssSelector("h1[class = 'eEr3CRE26U2u5R']");
+    private final By createBoardButton = By.cssSelector("button[data-testid = 'header-create-board-button']");
+    private final By input = By.cssSelector("input[data-testid = 'advanced-search-input']");
 
     public TrelloHomePage(WebDriver driver) {
         this.driver = driver;
@@ -28,5 +37,74 @@ public class TrelloHomePage {
 
     public boolean isOnHomePage() {
         return wait.until(ExpectedConditions.urlContains("trello.com/"));
+    }
+
+    public void openProfileMenu() {
+        driver.findElement(profileButton).click();
+    }
+
+    public String isProfileMenuVisible() {
+        WebElement textAccountMenu = wait.until(ExpectedConditions.visibilityOfElementLocated(accountMenu));
+        return textAccountMenu.getText();
+    }
+
+    public void openInfo() {
+        driver.findElement(infoButton).click();
+    }
+
+    public boolean isInfoVisible() {
+        WebElement textInfoMenu = wait.until(ExpectedConditions.visibilityOfElementLocated(infoMenu));
+        return textInfoMenu.isDisplayed();
+    }
+
+    public void openNotifications() {
+        driver.findElement(notificationsButton).click();
+    }
+
+    public boolean isNotificationsVisible() {
+        WebElement textNotificationsMenu = wait.until(ExpectedConditions.
+                visibilityOfElementLocated(notificationsMenu));
+        return textNotificationsMenu.isDisplayed();
+    }
+
+    public void openBoardsLink() {
+        driver.findElement(boardsLink).click();
+    }
+
+    public boolean isBoardsVisible() {
+        WebElement textBoardsHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(boardsHeader));
+        return textBoardsHeader.isDisplayed();
+    }
+
+    public void openTemplates() {
+        driver.findElement(templatesLink).click();
+    }
+
+    public boolean isTemplatesVisible() {
+        WebElement headerTemplates = wait.until(ExpectedConditions.visibilityOfElementLocated(templatesHeader));
+        return headerTemplates.isDisplayed();
+    }
+
+    public void openMainPage() {
+        driver.findElement(homeLink).click();
+    }
+
+    public void clickCreateButton() {
+        driver.findElement(createButton).click();
+    }
+
+    public boolean isCreateButtonOpened() {
+        WebElement createBoard = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoardButton));
+        return createBoard.isDisplayed();
+    }
+
+    public void search(String text) {
+        WebElement searchInputElement = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        searchInputElement.sendKeys(text + Keys.ARROW_DOWN + Keys.ENTER);
+    }
+
+    public String isTextVisible() {
+        WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(input));
+        return inputField.getText();
     }
 }
