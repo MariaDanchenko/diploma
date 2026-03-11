@@ -1,7 +1,6 @@
 package pages;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -28,7 +27,7 @@ public class TrelloHomePage {
     private final By boardsHeader = By.cssSelector("h3[class = 'xtkiiaSp5ulDJM']");
     private final By templatesHeader = By.cssSelector("h1[class = 'eEr3CRE26U2u5R']");
     private final By createBoardButton = By.cssSelector("button[data-testid = 'header-create-board-button']");
-    private final By input = By.cssSelector("input[data-testid = 'advanced-search-input']");
+    private final By createBoard = By.cssSelector("button[data-testid = 'create-board-tile']");
 
     public TrelloHomePage(WebDriver driver) {
         this.driver = driver;
@@ -107,5 +106,10 @@ public class TrelloHomePage {
     public String isTextVisible() {
         WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
         return inputField.getText();
+    }
+
+    public void createBoard() {
+        WebElement createBoardButton = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoard));
+        createBoardButton.click();
     }
 }
