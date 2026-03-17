@@ -1,12 +1,10 @@
 package pages;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.time.Duration;
 
 public class TrelloHomePage {
@@ -14,14 +12,14 @@ public class TrelloHomePage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    public By profileButton = By.xpath("//button[@data-testid = 'header-member-menu-button']");
-    public By boardsLink = By.cssSelector("a[href = '/u/user51818084/boards']");
-    public By templatesLink = By.cssSelector("a[href = '/templates']");
-    public By homeLink = By.cssSelector("div[data-testid = 'team25-header-logo']");
-    public By createButton = By.cssSelector("button[data-testid = 'header-create-menu-button']");
-    public By searchInput = By.cssSelector("input[data-testid='cross-product-search-input-skeleton']");
-    public By notificationsButton = By.cssSelector("button[data-testid = 'header-notifications-button']");
-    public By infoButton = By.cssSelector("button[data-testid = 'header-info-button']");
+    private final By profileButton = By.xpath("//button[@data-testid = 'header-member-menu-button']");
+    private final By boardsLink = By.cssSelector("a[href = '/u/user51818084/boards']");
+    private final By templatesLink = By.cssSelector("a[href = '/templates']");
+    private final By homeLink = By.cssSelector("div[data-testid = 'team25-header-logo']");
+    private final By createButton = By.cssSelector("button[data-testid = 'header-create-menu-button']");
+    private final By searchInput = By.cssSelector("input[data-testid='cross-product-search-input-skeleton']");
+    private final By notificationsButton = By.cssSelector("button[data-testid = 'header-notifications-button']");
+    private final By infoButton = By.cssSelector("button[data-testid = 'header-info-button']");
     private final By accountMenu = By.cssSelector("#account-menu-account-section-title");
     private final By infoMenu = By.cssSelector("h3[class = 'oksVR59krTcAPX']");
     private final By notificationsMenu = By.cssSelector("h2[class = 'HsONwDlXlvyo7z']");

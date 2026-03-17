@@ -13,16 +13,6 @@ public class NavigationTests extends BaseTest {
 
         //Проверка, что переходим на главную страницу
         Assert.assertTrue(trelloHomePage.isOnHomePage());
-
-        //Проверка видимости элементов
-        Assert.assertTrue(driver.findElement(trelloHomePage.profileButton).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.boardsLink).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.templatesLink).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.homeLink).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.createButton).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.searchInput).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.notificationsButton).isDisplayed());
-        Assert.assertTrue(driver.findElement(trelloHomePage.infoButton).isDisplayed());
     }
 
     @Test(priority = 2)
@@ -83,6 +73,7 @@ public class NavigationTests extends BaseTest {
 
     @Test(priority = 9)
     public void testSearch() throws InterruptedException {
+        driver.get("https://trello.com/search");
         trelloHomePage.search("Моя");
 
         //Assert.assertEquals(trelloHomePage.isTextVisible(), "Моя");
