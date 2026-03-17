@@ -42,7 +42,8 @@ public class TrelloHomePage {
     }
 
     public boolean isCreateButtonDisplayed() {
-        return driver.findElement(createButton).isDisplayed();
+        WebElement create = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoard));
+        return create.isDisplayed();
     }
 
     public boolean isSearchInputDisplayed() {
