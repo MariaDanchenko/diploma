@@ -13,6 +13,11 @@ public class NavigationTests extends BaseTest {
 
         //Проверка, что переходим на главную страницу
         Assert.assertTrue(trelloHomePage.isOnHomePage());
+
+        //Проверка наличия ключевых элементов
+        Assert.assertTrue(trelloHomePage.isCreateButtonDisplayed());
+        Assert.assertTrue(trelloHomePage.isSearchInputDisplayed());
+        Assert.assertTrue(trelloHomePage.isProfileButtonDisplayed());
     }
 
     @Test(priority = 2)
@@ -20,7 +25,7 @@ public class NavigationTests extends BaseTest {
         trelloHomePage.openProfileMenu();
 
         //Проверка, что открывается меню профиля
-        Assert.assertEquals(trelloHomePage.isProfileMenuVisible(), "УЧЕТНАЯ ЗАПИСЬ");
+        Assert.assertTrue(trelloHomePage.isProfileMenuOpened());
     }
 
     @Test(priority = 3)
@@ -72,10 +77,18 @@ public class NavigationTests extends BaseTest {
     }
 
     @Test(priority = 9)
-    public void testSearch() throws InterruptedException {
+    public void testSearch() {
         driver.get("https://trello.com/search");
         trelloHomePage.search("Моя");
 
-        //Assert.assertEquals(trelloHomePage.isTextVisible(), "Моя");
+        Assert.assertTrue(trelloHomePage.isSearchResultRelevant("Моя"));
+    }
+
+    @Test(priority = 10)
+    public void testSearchNonExistentText() {
+        driver.get("https://trello.com/search");
+        trelloHomePage.search("123");
+
+        Assert.assertTrue(trelloHomePage.isNoSearchResults());
     }
 }

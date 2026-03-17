@@ -6,6 +6,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.awt.*;
 import java.time.Duration;
+import java.util.List;
 
 public class TrelloHomePage {
 
@@ -27,6 +28,8 @@ public class TrelloHomePage {
     private final By templatesHeader = By.cssSelector("h1[class = 'eEr3CRE26U2u5R']");
     private final By createBoardButton = By.cssSelector("button[data-testid = 'header-create-board-button']");
     private final By createBoard = By.cssSelector("button[data-testid = 'create-board-tile']");
+    private final By inputSearch = By.cssSelector("input[data-testid='advanced-search-input']");
+    private final By searchResult = By.cssSelector("a[data-testid='advanced-search-board-result-item']");
 
     public TrelloHomePage(WebDriver driver) {
         this.driver = driver;
@@ -38,14 +41,27 @@ public class TrelloHomePage {
         return wait.until(ExpectedConditions.urlContains("trello.com/"));
     }
 
-    public void openProfileMenu() {
-
-        driver.findElement(profileButton).click();
+    public boolean isCreateButtonDisplayed() {
+        return driver.findElement(createButton).isDisplayed();
     }
 
-    public String isProfileMenuVisible() {
-        WebElement textAccountMenu = wait.until(ExpectedConditions.visibilityOfElementLocated(accountMenu));
-        return textAccountMenu.getText();
+    public boolean isSearchInputDisplayed() {
+        return driver.findElement(searchInput).isDisplayed();
+    }
+
+    public boolean isProfileButtonDisplayed() {
+        return driver.findElement(profileButton).isDisplayed();
+    }
+
+    public void openProfileMenu() {
+
+        WebElement profile = wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton));
+        profile.click();
+    }
+
+    public boolean isProfileMenuOpened() {
+        WebElement menu = wait.until(ExpectedConditions.visibilityOfElementLocated(accountMenu));
+        return menu.isDisplayed();
     }
 
     public void openInfo() {
@@ -104,23 +120,34 @@ public class TrelloHomePage {
         return createBoard.isDisplayed();
     }
 
-    public void search(String text) throws InterruptedException {
-        WebElement searchInputElement = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        searchInputElement.click();
-        searchInputElement.clear();
-
-        searchInputElement.sendKeys(text);
-
-        // подождать появление dropdown (если нужно)
-        Thread.sleep(500);
-
-        searchInputElement.sendKeys(Keys.ARROW_DOWN);
-        searchInputElement.sendKeys(Keys.ENTER);
+    public void search(String text) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(inputSearch));
+        input.sendKeys(text);
     }
 
-    public String isTextVisible() {
-        WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        return inputField.getCssValue("value");
+    public boolean isSearchResultRelevant(String expectedText) {
+
+        try {
+            List<WebElement> results =
+                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResult));
+
+            if (results.isEmpty()) {
+                return false;
+            }
+
+            for (WebElement result : results) {
+                if (result.getText().contains(expectedText)) {
+                    return true; //Если хотя бы 1 результат содержит текст
+                }
+            }
+            return false; //Если ни один результат не содержит текст
+        } catch (Exception e) {
+            return false; //Если результатов нет вообще
+        }
+    }
+
+    public boolean isNoSearchResults() {
+        return driver.findElements(searchResult).isEmpty();
     }
 
     public void createBoard() {
