@@ -34,10 +34,12 @@ public class TrelloHomePage {
     }
 
     public boolean isOnHomePage() {
+
         return wait.until(ExpectedConditions.urlContains("trello.com/"));
     }
 
     public void openProfileMenu() {
+
         driver.findElement(profileButton).click();
     }
 
@@ -47,6 +49,7 @@ public class TrelloHomePage {
     }
 
     public void openInfo() {
+
         driver.findElement(infoButton).click();
     }
 
@@ -56,6 +59,7 @@ public class TrelloHomePage {
     }
 
     public void openNotifications() {
+
         driver.findElement(notificationsButton).click();
     }
 
@@ -66,6 +70,7 @@ public class TrelloHomePage {
     }
 
     public void openBoardsLink() {
+
         driver.findElement(boardsLink).click();
     }
 
@@ -75,6 +80,7 @@ public class TrelloHomePage {
     }
 
     public void openTemplates() {
+
         driver.findElement(templatesLink).click();
     }
 
@@ -84,10 +90,12 @@ public class TrelloHomePage {
     }
 
     public void openMainPage() {
+
         driver.findElement(homeLink).click();
     }
 
     public void clickCreateButton() {
+
         driver.findElement(createButton).click();
     }
 
