@@ -1,11 +1,12 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.time.Duration;
 
 public class TrelloHomePage {
@@ -97,15 +98,23 @@ public class TrelloHomePage {
         return createBoard.isDisplayed();
     }
 
-    public void search(String text) {
+    public void search(String text) throws InterruptedException {
         WebElement searchInputElement = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        driver.findElement(searchInput).click();
+        searchInputElement.click();
+        searchInputElement.clear();
+
         searchInputElement.sendKeys(text);
+
+        // подождать появление dropdown (если нужно)
+        Thread.sleep(500);
+
+        searchInputElement.sendKeys(Keys.ARROW_DOWN);
+        searchInputElement.sendKeys(Keys.ENTER);
     }
 
     public String isTextVisible() {
         WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        return inputField.getText();
+        return inputField.getCssValue("value");
     }
 
     public void createBoard() {

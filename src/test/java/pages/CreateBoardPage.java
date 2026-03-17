@@ -16,7 +16,8 @@ public class CreateBoardPage {
     private final By boardBackground = By.cssSelector("button[style*='rgb(220, 234, 254)']");
     private final By backgroundCheckIcon = By.cssSelector("span[data-testid='CheckIcon']");
     private final By boardTitle = By.cssSelector("input[data-testid='create-board-title-input']");
-    private final By visibility = By.cssSelector("div[data-testid='create-board-select-visibility']");
+    private final By visibilityDropdown = By.cssSelector("div[data-testid='create-board-select-visibility']");
+    private final By createButton = By.cssSelector("button[data-testid='create-board-submit-button']");
 
     public CreateBoardPage(WebDriver driver) {
         this.driver = driver;
@@ -32,12 +33,23 @@ public class CreateBoardPage {
         return driver.findElement(backgroundCheckIcon).isDisplayed();
     }
 
-    public String inputTitle(String text) {
+    public void inputTitle(String text) {
         driver.findElement(boardTitle).sendKeys(text);
-        return text;
     }
 
-    public void selectVisibility() {
-        driver.findElement(visibility).click();
+    public String getBoardTitle() {
+        return driver.findElement(boardTitle).getAttribute("value");
     }
+
+    public void openVisibilityDropdown() {
+        driver.findElement(visibilityDropdown).click();
+    }
+
+    public void selectPrivateVisibility() {
+    }
+
+    public void clickCreateButton() {
+        driver.findElement(createButton).click();
+    }
+
 }
