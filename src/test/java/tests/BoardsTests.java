@@ -19,7 +19,7 @@ public class BoardsTests extends BaseTest {
 
     @Test(priority = 2)
     public void testAddCard() {
-               BoardPage boardPage = new BoardPage(driver);
+        BoardPage boardPage = new BoardPage(driver);
         boardPage.addCard("Сегодня", "Тестовая карточка");
 
         Assert.assertTrue(boardPage.isCardDisplayedInList("Сегодня", "Тестовая карточка"));
