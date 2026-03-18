@@ -9,8 +9,6 @@ public class NavigationTests extends BaseTest {
     @Test(priority = 1)
     public void testHomePageElements() {
 
-        TrelloHomePage trelloHomePage = new TrelloHomePage(driver);
-
         //Проверка, что переходим на главную страницу
         Assert.assertTrue(trelloHomePage.isOnHomePage());
 

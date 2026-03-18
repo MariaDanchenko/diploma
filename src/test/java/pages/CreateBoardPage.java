@@ -41,15 +41,16 @@ public class CreateBoardPage {
         return driver.findElement(boardTitle).getAttribute("value");
     }
 
-    public void openVisibilityDropdown() {
-        driver.findElement(visibilityDropdown).click();
-    }
-
-    public void selectPrivateVisibility() {
-    }
 
     public void clickCreateButton() {
         driver.findElement(createButton).click();
     }
 
+    public BoardPage createBoard(String title) {
+        selectBackground();
+        inputTitle(title);
+        clickCreateButton();
+
+        return new BoardPage(driver);
+    }
 }
