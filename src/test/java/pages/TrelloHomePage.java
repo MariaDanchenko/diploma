@@ -14,22 +14,29 @@ public class TrelloHomePage {
     private WebDriverWait wait;
 
     private final By profileButton = By.xpath("//button[@data-testid = 'header-member-menu-button']");
-    private final By boardsLink = By.cssSelector("a[href = '/u/user51818084/boards']");
-    private final By templatesLink = By.cssSelector("a[href = '/templates']");
-    private final By homeLink = By.cssSelector("div[data-testid = 'team25-header-logo']");
-    private final By createButton = By.cssSelector("button[data-testid = 'header-create-menu-button']");
+    private final By createMenuButton = By.cssSelector("button[data-testid = 'header-create-menu-button']");
+    private final By createBoardButton = By.cssSelector("button[data-testid='header-create-board-button']");
+    private final By createBoardTile = By.cssSelector("[data-testid='create-board-tile']");
+
     private final By searchInput = By.cssSelector("input[data-testid='cross-product-search-input-skeleton']");
+    private final By advancedSearchInput = By.cssSelector("input[data-testid='advanced-search-input']");
+    private final By searchResults = By.cssSelector("a[data-testid='advanced-search-board-result-item']");
+
+    private final By boardsLink = By.xpath("//a[contains(@href,'/boards')]");
+    private final By templatesLink = By.xpath("//a[contains(@href,'/templates')]");
+
+    private final By homeLink = By.cssSelector("div[data-testid = 'team25-header-logo']");
+
     private final By notificationsButton = By.cssSelector("button[data-testid = 'header-notifications-button']");
     private final By infoButton = By.cssSelector("button[data-testid = 'header-info-button']");
-    private final By accountMenu = By.cssSelector("#account-menu-account-section-title");
-    private final By infoMenu = By.cssSelector("h3[class = 'oksVR59krTcAPX']");
+
+    private final By accountMenu = By.id("account-menu-account-section-title");
+    private final By boardsHeader = By.xpath("//h3[contains(text(),'ПРОСТРАНСТВА')]");
+    private final By templatesHeader = By.xpath("//h1[contains(text(),'категории')]");
+
+    private final By infoMenu = By.id("header-info-menu-popover-content");
     private final By notificationsMenu = By.cssSelector("h2[class = 'HsONwDlXlvyo7z']");
-    private final By boardsHeader = By.cssSelector("h3[class = 'xtkiiaSp5ulDJM']");
-    private final By templatesHeader = By.cssSelector("h1[class = 'eEr3CRE26U2u5R']");
-    private final By createBoardButton = By.cssSelector("button[data-testid = 'header-create-board-button']");
     private final By createBoard = By.cssSelector("button[data-testid = 'create-board-tile']");
-    private final By inputSearch = By.cssSelector("input[data-testid='advanced-search-input']");
-    private final By searchResult = By.cssSelector("a[data-testid='advanced-search-board-result-item']");
 
     public TrelloHomePage(WebDriver driver) {
         this.driver = driver;
@@ -38,7 +45,7 @@ public class TrelloHomePage {
 
     public boolean isOnHomePage() {
 
-        return wait.until(ExpectedConditions.urlContains("trello.com/"));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton)).isDisplayed();
     }
 
     public boolean isCreateButtonDisplayed() {
@@ -48,10 +55,6 @@ public class TrelloHomePage {
 
     public boolean isSearchInputDisplayed() {
         return driver.findElement(searchInput).isDisplayed();
-    }
-
-    public boolean isProfileButtonDisplayed() {
-        return driver.findElement(profileButton).isDisplayed();
     }
 
     public void openProfileMenu() {
@@ -65,64 +68,57 @@ public class TrelloHomePage {
         return menu.isDisplayed();
     }
 
-    public void openInfo() {
+    public void openBoardsPage() {
 
-        driver.findElement(infoButton).click();
+        wait.until(ExpectedConditions.elementToBeClickable(boardsLink)).click();
     }
 
-    public boolean isInfoVisible() {
-        WebElement textInfoMenu = wait.until(ExpectedConditions.visibilityOfElementLocated(infoMenu));
-        return textInfoMenu.isDisplayed();
+    public boolean isBoardsPageOpened() {
+
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(boardsHeader)).isDisplayed();
     }
 
-    public void openNotifications() {
+    public void openTemplatesPage() {
 
-        driver.findElement(notificationsButton).click();
+        wait.until(ExpectedConditions.elementToBeClickable(templatesLink)).click();
     }
 
-    public boolean isNotificationsVisible() {
-        WebElement textNotificationsMenu = wait.until(ExpectedConditions.
-                visibilityOfElementLocated(notificationsMenu));
-        return textNotificationsMenu.isDisplayed();
+    public boolean isTemplatesPageOpened() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(templatesHeader)).isDisplayed();
     }
 
-    public void openBoardsLink() {
+    public void goToHomePage() {
 
-        driver.findElement(boardsLink).click();
+        wait.until(ExpectedConditions.elementToBeClickable(homeLink)).click();
     }
 
-    public boolean isBoardsVisible() {
-        WebElement textBoardsHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(boardsHeader));
-        return textBoardsHeader.isDisplayed();
+    public void openCreateMenu() {
+
+        wait.until(ExpectedConditions.elementToBeClickable(createMenuButton)).click();
     }
 
-    public void openTemplates() {
-
-        driver.findElement(templatesLink).click();
+    public void clickCreateBoard() {
+        wait.until(ExpectedConditions.elementToBeClickable(createBoardButton)).click();
     }
 
-    public boolean isTemplatesVisible() {
-        WebElement headerTemplates = wait.until(ExpectedConditions.visibilityOfElementLocated(templatesHeader));
-        return headerTemplates.isDisplayed();
+    public void openCreateBoardModal() {
+        wait.until(ExpectedConditions.elementToBeClickable(createBoardTile)).click();
     }
 
-    public void openMainPage() {
+    public BoardPage createBoard(String boardName) {
+        openCreateMenu();
+        openCreateBoardModal();
 
-        driver.findElement(homeLink).click();
+        CreateBoardPage createBoardPage = new CreateBoardPage(driver);
+        return createBoardPage.createBoard(boardName);
     }
 
-    public void clickCreateButton() {
-
-        driver.findElement(createButton).click();
-    }
-
-    public boolean isCreateButtonOpened() {
-        WebElement createBoard = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoardButton));
-        return createBoard.isDisplayed();
+    public void openSearchPage() {
+        driver.get("https://trello.com/search");
     }
 
     public void search(String text) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(inputSearch));
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(advancedSearchInput));
         input.sendKeys(text);
     }
 
@@ -130,7 +126,7 @@ public class TrelloHomePage {
 
         try {
             List<WebElement> results =
-                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResult));
+                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResults));
 
             if (results.isEmpty()) {
                 return false;
@@ -148,11 +144,32 @@ public class TrelloHomePage {
     }
 
     public boolean isNoSearchResults() {
-        return driver.findElements(searchResult).isEmpty();
+        return driver.findElements(searchResults).isEmpty();
     }
 
-    public void createBoard() {
-        WebElement createBoardButton = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoard));
-        createBoardButton.click();
+    public void openNotifications() {
+
+        wait.until(ExpectedConditions.elementToBeClickable(notificationsButton)).click();
+    }
+
+    public void openInfo() {
+
+        wait.until(ExpectedConditions.elementToBeClickable(infoButton)).click();
+    }
+
+    public boolean isInfoVisible() {
+        WebElement info = wait.until(ExpectedConditions.visibilityOfElementLocated(infoMenu));
+        return info.isDisplayed();
+    }
+
+    public boolean isNotificationsVisible() {
+        WebElement textNotificationsMenu = wait.until(ExpectedConditions.
+                visibilityOfElementLocated(notificationsMenu));
+        return textNotificationsMenu.isDisplayed();
+    }
+
+    public boolean isCreateButtonOpened() {
+        WebElement createBoard = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoardButton));
+        return createBoard.isDisplayed();
     }
 }

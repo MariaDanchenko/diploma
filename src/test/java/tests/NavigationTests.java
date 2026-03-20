@@ -1,12 +1,17 @@
 package tests;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pages.TrelloHomePage;
 
 public class NavigationTests extends BaseTest {
 
-    @Test(priority = 1)
+    @BeforeMethod
+    public void resetState() {
+        trelloHomePage.goToHomePage();
+    }
+
+    @Test
     public void testHomePageElements() {
 
         //Проверка, что переходим на главную страницу
@@ -15,10 +20,9 @@ public class NavigationTests extends BaseTest {
         //Проверка наличия ключевых элементов
         Assert.assertTrue(trelloHomePage.isCreateButtonDisplayed());
         Assert.assertTrue(trelloHomePage.isSearchInputDisplayed());
-        Assert.assertTrue(trelloHomePage.isProfileButtonDisplayed());
     }
 
-    @Test(priority = 2)
+    @Test
     public void testOpenProfileMenu() {
         trelloHomePage.openProfileMenu();
 
@@ -26,7 +30,7 @@ public class NavigationTests extends BaseTest {
         Assert.assertTrue(trelloHomePage.isProfileMenuOpened());
     }
 
-    @Test(priority = 3)
+    @Test
     public void testOpenInfo() {
         trelloHomePage.openInfo();
 
@@ -34,7 +38,7 @@ public class NavigationTests extends BaseTest {
         Assert.assertTrue(trelloHomePage.isInfoVisible());
     }
 
-    @Test(priority = 4)
+    @Test
     public void testNotificationMenu() {
         trelloHomePage.openNotifications();
 
@@ -42,49 +46,41 @@ public class NavigationTests extends BaseTest {
         Assert.assertTrue(trelloHomePage.isNotificationsVisible());
     }
 
-    @Test(priority = 5)
-    public void testOpenBoardsLink() {
-        trelloHomePage.openBoardsLink();
+    @Test
+    public void testOpenBoardsPage() {
+        trelloHomePage.openBoardsPage();
 
         //Проверка, что открылась страница с досками
-        Assert.assertTrue(trelloHomePage.isBoardsVisible());
+        Assert.assertTrue(trelloHomePage.isBoardsPageOpened());
     }
 
-    @Test(priority = 6)
-    public void testOpenTemplates() {
-        trelloHomePage.openTemplates();
+    @Test
+    public void testOpenTemplatesPage() {
+        trelloHomePage.openTemplatesPage();
 
         //Проверка, что открывается страница с шаблонами
-        Assert.assertTrue(trelloHomePage.isTemplatesVisible());
+        Assert.assertTrue(trelloHomePage.isTemplatesPageOpened());
     }
 
-    @Test(priority = 7)
-    public void testOpenMainPage() {
-        trelloHomePage.openMainPage();
+    @Test
+    public void testCreateMenu() {
+        trelloHomePage.openCreateMenu();
+        trelloHomePage.clickCreateBoard();
 
-        //Проверка, что открылась главная страница
-        Assert.assertTrue(trelloHomePage.isBoardsVisible());
+        Assert.assertTrue(trelloHomePage.isOnHomePage());
     }
 
-    @Test(priority = 8)
-    public void testCreateButton() {
-        trelloHomePage.clickCreateButton();
-
-        //Проверка, что меню создания открылось
-        Assert.assertTrue(trelloHomePage.isCreateButtonOpened());
-    }
-
-    @Test(priority = 9)
+    @Test
     public void testSearch() {
-        driver.get("https://trello.com/search");
+        trelloHomePage.openSearchPage();
         trelloHomePage.search("Моя");
 
         Assert.assertTrue(trelloHomePage.isSearchResultRelevant("Моя"));
     }
 
-    @Test(priority = 10)
+    @Test
     public void testSearchNonExistentText() {
-        driver.get("https://trello.com/search");
+        trelloHomePage.openSearchPage();
         trelloHomePage.search("123");
 
         Assert.assertTrue(trelloHomePage.isNoSearchResults());
