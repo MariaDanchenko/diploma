@@ -1,42 +1,55 @@
 package tests;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.BoardPage;
-import pages.CreateBoardPage;
 
 public class BoardsTests extends BaseTest {
 
     @Test(priority = 1)
     public void testCreateBoard() {
-        trelloHomePage.createBoard();
+        String boardName = "TestBoard";
 
-        CreateBoardPage createBoardPage = new CreateBoardPage(driver);
-        BoardPage boardPage = createBoardPage.createBoard("test");
+        BoardPage boardPage = trelloHomePage.createBoard(boardName);
 
-        Assert.assertEquals(boardPage.getBoardHeader(), "test");
+        Assert.assertTrue(boardPage.isBoardLoaded());
+        Assert.assertEquals(boardPage.getBoardHeader(), boardName);
     }
 
     @Test(priority = 2)
     public void testAddCard() {
-        BoardPage boardPage = new BoardPage(driver);
-        boardPage.addCard("Сегодня", "Тестовая карточка");
+        String boardName = "TestBoard";
+        String cardName = "TestCard";
 
-        Assert.assertTrue(boardPage.isCardDisplayedInList("Сегодня", "Тестовая карточка"));
+        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+
+        boardPage.addCardToFirstList(cardName);
+
+        Assert.assertTrue(boardPage.isCardExists(cardName));
+    }
+
+    @Test(priority = 3)
+    public void testEditCard() {
+        String boardName = "TestBoard";
+        String oldName = "TestCard";
+        String newName = "UpdatedCard";
+
+        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+
+        boardPage.addCardToFirstList(oldName);
+        boardPage.editCard(oldName, newName);
+
+        Assert.assertTrue(boardPage.isCardExists(newName));
     }
 
     @Test(priority = 10)
     public void testDeleteBoard() {
-        BoardPage boardPage = new BoardPage(driver);
-        boardPage.clickMenuButton();
-        boardPage.clickCloseBoard();
-        boardPage.clickCloseButton();
+        String boardName = "TestBoard";
 
-        Assert.assertTrue(boardPage.isClosedBoardHeaderContains("доска закрыта"));
+        BoardPage boardPage = trelloHomePage.createBoard(boardName);
 
-        boardPage.clickMenuButton();
-        boardPage.clickDeleteBoardButton();
-        boardPage.clickDeleteButton();
+        boardPage.deleteBoard();
 
         Assert.assertTrue(trelloHomePage.isOnHomePage());
     }

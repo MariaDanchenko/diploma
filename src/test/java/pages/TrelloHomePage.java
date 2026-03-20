@@ -101,15 +101,22 @@ public class TrelloHomePage {
         wait.until(ExpectedConditions.elementToBeClickable(createBoardButton)).click();
     }
 
-    public void openCreateBoardModal() {
-        wait.until(ExpectedConditions.elementToBeClickable(createBoardTile)).click();
+    public CreateBoardPage openCreateBoardModal() {
+        openCreateMenu();
+
+        WebElement createBoardButton = wait.until(ExpectedConditions.elementToBeClickable(this.createBoardButton));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBoardButton);
+
+        WebElement createBoardTile = wait.until(ExpectedConditions.elementToBeClickable(this.createBoardTile));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", createBoardTile);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBoardTile);
+
+        return new CreateBoardPage(driver);
     }
 
     public BoardPage createBoard(String boardName) {
-        openCreateMenu();
-        openCreateBoardModal();
+        CreateBoardPage createBoardPage = openCreateBoardModal();
 
-        CreateBoardPage createBoardPage = new CreateBoardPage(driver);
         return createBoardPage.createBoard(boardName);
     }
 

@@ -15,17 +15,24 @@ public class BoardPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
+    //Board
     private final By boardHeader = By.cssSelector("h1[data-testid='board-name-display']");
-    //Локаторы для столбцов
-    private final By todayList = By.xpath("//span[@class='h3iSNmIaIueSDt' and text()='Сегодня']");
-    private final By thisWeekList = By.xpath("//span[@class='h3iSNmIaIueSDt' and text()='На этой неделе']");
-    private final By laterList = By.xpath("//span[@class='h3iSNmIaIueSDt' and text()='Позже']");
 
-    //Локаторы для добавления карточки
+    //Lists & Cards
+    private final By lists = By.cssSelector("div[data-testid='list']");
+    private final By cards = By.cssSelector("a[data-testid='card-name']");
+    private final By addListButton = By.cssSelector("button[data-testid='list-composer-button']");
+    private final By textAreaList = By.cssSelector("textarea[data-testid='list-name-textarea']");
+    private final By addListConfirmButton = By.cssSelector("button[data-testid='list-composer-add-list-button']");
+
+    //Add card
     private final By addCardButton = By.cssSelector("button[data-testid='list-add-card-button']");
     private final By inputText = By.cssSelector("textarea[data-testid='list-card-composer-textarea']");
     private final By addCard = By.cssSelector("button[data-testid='list-card-composer-add-card-button']");
-    private final By cardTitle = By.cssSelector("a[data-testid='card-name']");
+
+    // Edit card
+    private final By cardTitleInput = By.cssSelector("textarea[data-testid='card-back-title-input']");
+    private final By closeCardButton = By.cssSelector("button[aria-label='Закрыть диалоговое окно']");
 
 
     private final By menuButton = By.cssSelector(
@@ -33,9 +40,9 @@ public class BoardPage {
 
     //Локаторы для удаления доски
     private final By closeBoardButton = By.xpath("//button[.//div[contains(text(), 'Закрыть доску')]]");
-    private final By closeButton = By.cssSelector("button[data-testid='popover-close-board-confirm']");
+    private final By confirmCloseButton = By.cssSelector("button[data-testid='popover-close-board-confirm']");
     private final By deleteBoardButton = By.cssSelector("button[data-testid='close-board-delete-board-button']");
-    private final By deleteButton = By.cssSelector("button[data-testid='close-board-delete-board-confirm-button']");
+    private final By confirmDeleteButton = By.cssSelector("button[data-testid='close-board-delete-board-confirm-button']");
     private final By headerCloseBoard = By.cssSelector("div[class='q8mBNw86hnV81W']");
     private final By deleteHeader = By.cssSelector("h2[class='VmbXKMJLSqfD0U']");
     private final By addNewColumn = By.cssSelector("button[data-testid='list-composer-button']");
@@ -48,78 +55,88 @@ public class BoardPage {
     }
 
     public String getBoardHeader() {
-        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(boardHeader));
-        return header.getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(boardHeader)).getText();
     }
 
-    public void clickMenuButton() {
-        WebElement menu = wait.until(ExpectedConditions.elementToBeClickable(menuButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", menu);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", menu);
+    public boolean isBoardLoaded() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(boardHeader)).isDisplayed();
     }
 
-    public void clickCloseBoard() {
-        WebElement closeBoard = wait.until(ExpectedConditions.elementToBeClickable(closeBoardButton));
-        closeBoard.click();
+    public void addList(String listName) {
+
+        WebElement addListBtn = wait.until(ExpectedConditions.elementToBeClickable(addListButton));
+        addListBtn.click();
+
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(textAreaList));
+        input.sendKeys(listName);
+
+        WebElement confirmBtn = wait.until(ExpectedConditions.elementToBeClickable(addListConfirmButton));
+        confirmBtn.click();
     }
 
-    public void clickCloseButton() {
-        WebElement close = wait.until(ExpectedConditions.elementToBeClickable(closeButton));
-        close.click();
-    }
-
-    public boolean isClosedBoardHeaderContains(String text) {
-        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(headerCloseBoard));
-        String headerText = header.getText();
-        return headerText.contains(text);
-    }
-
-    public void clickDeleteBoardButton() {
-        WebElement deleteBoard = wait.until(ExpectedConditions.elementToBeClickable(deleteBoardButton));
-        deleteBoard.click();
-    }
-
-    public void clickDeleteButton() {
-        WebElement delete = wait.until(ExpectedConditions.elementToBeClickable(deleteButton));
-        delete.click();
-    }
-
-    public void addCard(String name, String title) {
-        WebElement list = getListByName(name);
-
-        WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(list.findElement(addCardButton)));
-        addBtn.click();
-
-        WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(inputText));
-        titleInput.sendKeys(title);
-
-        driver.findElement(addCard).click();
-    }
-
-    private WebElement getListByName(String name) {
-        By listLocator = By.xpath(
-                "//div[@data-testid='list']//span[text()='" + name + "']/ancestor::div[@data-testid='list']"
+    private WebElement getFirstList() {
+        List<WebElement> allLists = wait.until(
+                ExpectedConditions.visibilityOfAllElementsLocatedBy(lists)
         );
 
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(listLocator));
+        return allLists.get(0);
     }
 
-    public boolean isCardDisplayedInList(String name, String title) {
-        //Получаем список
-        WebElement list = getListByName(name);
+    public void addCardToFirstList(String title) {
+        WebElement list = getFirstList();
 
-        //Получаем все карточки внутри списка
-        List<WebElement> cards = list.findElements(cardsInList);
+        WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                list.findElement(addCardButton)
+        ));
+        addBtn.click();
 
-        //Проходим по списку
-        for (int i = 0; i < cards.size(); i++) {
-            WebElement currentCard = cards.get(i);
-            String cardText = currentCard.getText();
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(inputText));
+        input.sendKeys(title);
 
-            if (cardText.equals(title)) {
-                return true;
-            }
-        }
-        return false;
+        driver.findElement(addCard).click();
+
+        // Ждём появления карточки
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
+        ));
+    }
+
+    public boolean isCardExists(String title) {
+        return !driver.findElements(
+                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
+        ).isEmpty();
+    }
+
+    public void openCard(String title) {
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
+        ));
+        card.click();
+    }
+
+    public void editCard(String oldTitle, String newTitle) {
+        openCard(oldTitle);
+
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(cardTitleInput));
+
+        input.clear();
+        input.sendKeys(newTitle);
+
+        driver.findElement(closeCardButton).click();
+    }
+
+    public void deleteBoard() {
+
+        WebElement menu = wait.until(ExpectedConditions.elementToBeClickable(menuButton));
+        menu.click();
+
+        WebElement closeBoard = wait.until(ExpectedConditions.elementToBeClickable(closeBoardButton));
+        closeBoard.click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(confirmCloseButton)).click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(deleteBoardButton)).click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(confirmDeleteButton)).click();
     }
 }

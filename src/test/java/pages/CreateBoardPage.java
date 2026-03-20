@@ -1,6 +1,7 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -48,8 +49,13 @@ public class CreateBoardPage {
 
     public BoardPage createBoard(String title) {
         selectBackground();
-        inputTitle(title);
-        clickCreateButton();
+
+        WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(boardTitle));
+        titleInput.clear();
+        titleInput.sendKeys(title);
+
+        WebElement createBtn = wait.until(ExpectedConditions.elementToBeClickable(createButton));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBtn);
 
         return new BoardPage(driver);
     }
