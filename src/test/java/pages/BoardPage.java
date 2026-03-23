@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -22,7 +23,7 @@ public class BoardPage {
     private final By lists = By.cssSelector("div[data-testid='list']");
     private final By cards = By.cssSelector("a[data-testid='card-name']");
     private final By addListButton = By.cssSelector("button[data-testid='list-composer-button']");
-    private final By textAreaList = By.cssSelector("textarea[data-testid='list-name-textarea']");
+    private final By textAreaList = By.cssSelector("textarea[name='Введите имя колонки…']");
     private final By addListConfirmButton = By.cssSelector("button[data-testid='list-composer-add-list-button']");
 
     //Add card
@@ -31,8 +32,9 @@ public class BoardPage {
     private final By addCard = By.cssSelector("button[data-testid='list-card-composer-add-card-button']");
 
     // Edit card
-    private final By cardTitleInput = By.cssSelector("textarea[data-testid='card-back-title-input']");
-    private final By closeCardButton = By.cssSelector("button[aria-label='Закрыть диалоговое окно']");
+    private final By editButton = By.cssSelector("button[data-testid='quick-card-editor-button']");
+    private final By cardTitleInput = By.cssSelector("textarea[data-testid='quick-card-editor-card-title']");
+    private final By saveButton = By.cssSelector("button[class='RYMF7FCviGjoRS ybVBgfOiuWZJtD orotyyeYQx_tso']");
 
 
     private final By menuButton = By.cssSelector(
@@ -51,7 +53,7 @@ public class BoardPage {
 
     public BoardPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
     public String getBoardHeader() {
@@ -64,41 +66,40 @@ public class BoardPage {
 
     public void addList(String listName) {
 
-        WebElement addListBtn = wait.until(ExpectedConditions.elementToBeClickable(addListButton));
-        addListBtn.click();
+        //берём последний textarea (активный)
+        List<WebElement> inputs = wait.until(
+                ExpectedConditions.visibilityOfAllElementsLocatedBy(textAreaList)
+        );
 
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(textAreaList));
+        WebElement input = inputs.get(inputs.size() - 1);
+
         input.sendKeys(listName);
 
-        WebElement confirmBtn = wait.until(ExpectedConditions.elementToBeClickable(addListConfirmButton));
+        WebElement confirmBtn = wait.until(
+                ExpectedConditions.elementToBeClickable(addListConfirmButton)
+        );
         confirmBtn.click();
     }
 
-    private WebElement getFirstList() {
-        List<WebElement> allLists = wait.until(
-                ExpectedConditions.visibilityOfAllElementsLocatedBy(lists)
-        );
-
-        return allLists.get(0);
-    }
-
     public void addCardToFirstList(String title) {
-        WebElement list = getFirstList();
 
-        WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                list.findElement(addCardButton)
-        ));
-        addBtn.click();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        WebElement addCardBtn = wait.until(ExpectedConditions.elementToBeClickable(addCardButton));
+        addCardBtn.click();
+
+        // Ждём появления поля ввода
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(inputText));
+
+        input.click();
         input.sendKeys(title);
 
-        driver.findElement(addCard).click();
-
-        // Ждём появления карточки
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
-        ));
+        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(addCard));
+        submitButton.click();
     }
 
     public boolean isCardExists(String title) {
@@ -107,22 +108,23 @@ public class BoardPage {
         ).isEmpty();
     }
 
-    public void openCard(String title) {
-        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
-        ));
-        card.click();
-    }
-
     public void editCard(String oldTitle, String newTitle) {
-        openCard(oldTitle);
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@data-testid='card-name'][contains(text(),'" + oldTitle + "')]")
+        ));
+
+        Actions actions = new Actions(driver);
+        actions.moveToElement(card).perform();
+
+        WebElement editBtn = wait.until(ExpectedConditions.elementToBeClickable(editButton));
+        editBtn.click();
 
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(cardTitleInput));
-
         input.clear();
         input.sendKeys(newTitle);
 
-        driver.findElement(closeCardButton).click();
+        WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(saveButton));
+        submit.click();
     }
 
     public void deleteBoard() {

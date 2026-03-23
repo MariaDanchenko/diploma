@@ -7,6 +7,8 @@ import pages.BoardPage;
 
 public class BoardsTests extends BaseTest {
 
+    private BoardPage boardPage;
+
     @Test(priority = 1)
     public void testCreateBoard() {
         String boardName = "TestBoard";
@@ -17,33 +19,45 @@ public class BoardsTests extends BaseTest {
         Assert.assertEquals(boardPage.getBoardHeader(), boardName);
     }
 
-    @Test(priority = 2)
+    @Test
+    public void testAddLists() {
+        String boardName = "TestBoard";
+
+        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+
+        boardPage.addList("List 1");
+        boardPage.addList("List 2");
+
+        Assert.assertTrue(driver.getPageSource().contains("List 1"));
+        Assert.assertTrue(driver.getPageSource().contains("List 2"));
+    }
+
+    @Test
     public void testAddCard() {
         String boardName = "TestBoard";
-        String cardName = "TestCard";
 
         BoardPage boardPage = trelloHomePage.createBoard(boardName);
 
-        boardPage.addCardToFirstList(cardName);
+        boardPage.addList("List 1");
+        boardPage.addCardToFirstList("TestCard");
 
-        Assert.assertTrue(boardPage.isCardExists(cardName));
+        Assert.assertTrue(boardPage.isCardExists("TestCard"));
     }
 
-    @Test(priority = 3)
+    @Test
     public void testEditCard() {
         String boardName = "TestBoard";
-        String oldName = "TestCard";
-        String newName = "UpdatedCard";
 
         BoardPage boardPage = trelloHomePage.createBoard(boardName);
 
-        boardPage.addCardToFirstList(oldName);
-        boardPage.editCard(oldName, newName);
+        boardPage.addList("List 1");
+        boardPage.addCardToFirstList("TestCard");
+        boardPage.editCard("TestCard", "UpdatedCard");
 
-        Assert.assertTrue(boardPage.isCardExists(newName));
+        Assert.assertTrue(boardPage.isCardExists("UpdatedCard"));
     }
 
-    @Test(priority = 10)
+    @Test
     public void testDeleteBoard() {
         String boardName = "TestBoard";
 
