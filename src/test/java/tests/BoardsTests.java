@@ -1,7 +1,8 @@
 package tests;
 
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import pages.BoardPage;
 
@@ -9,11 +10,11 @@ public class BoardsTests extends BaseTest {
 
     private BoardPage boardPage;
 
-    @Test(priority = 1)
+    @Test
     public void testCreateBoard() {
         String boardName = "TestBoard";
 
-        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+        boardPage = trelloHomePage.createBoard(boardName);
 
         Assert.assertTrue(boardPage.isBoardLoaded());
         Assert.assertEquals(boardPage.getBoardHeader(), boardName);
@@ -23,7 +24,7 @@ public class BoardsTests extends BaseTest {
     public void testAddLists() {
         String boardName = "TestBoard";
 
-        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+        boardPage = trelloHomePage.createBoard(boardName);
 
         boardPage.addList("List 1");
         boardPage.addList("List 2");
@@ -36,7 +37,7 @@ public class BoardsTests extends BaseTest {
     public void testAddCard() {
         String boardName = "TestBoard";
 
-        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+        boardPage = trelloHomePage.createBoard(boardName);
 
         boardPage.addList("List 1");
         boardPage.addCardToFirstList("TestCard");
@@ -48,7 +49,7 @@ public class BoardsTests extends BaseTest {
     public void testEditCard() {
         String boardName = "TestBoard";
 
-        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+        boardPage = trelloHomePage.createBoard(boardName);
 
         boardPage.addList("List 1");
         boardPage.addCardToFirstList("TestCard");
@@ -61,10 +62,26 @@ public class BoardsTests extends BaseTest {
     public void testDeleteBoard() {
         String boardName = "TestBoard";
 
-        BoardPage boardPage = trelloHomePage.createBoard(boardName);
+        boardPage = trelloHomePage.createBoard(boardName);
 
         boardPage.deleteBoard();
 
         Assert.assertTrue(trelloHomePage.isOnHomePage());
+    }
+
+    @AfterMethod
+    public void tearDown(ITestResult result) {
+        //Пропускаем cleanup для теста удаления доски
+        if (result.getMethod().getMethodName().equals("testDeleteBoard")) {
+            return;
+        }
+
+        try {
+            if (boardPage != null && boardPage.isBoardLoaded()) {
+                boardPage.deleteBoard();
+            }
+        } catch (Exception e) {
+            System.out.println("Cleanup failed: " + e.getMessage());
+        }
     }
 }

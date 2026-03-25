@@ -137,8 +137,21 @@ public class BoardPage {
 
         wait.until(ExpectedConditions.elementToBeClickable(confirmCloseButton)).click();
 
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerCloseBoard));
+
+        WebElement menuBtn = wait.until(ExpectedConditions.elementToBeClickable(menuButton));
+        menuBtn.click();
+
         wait.until(ExpectedConditions.elementToBeClickable(deleteBoardButton)).click();
 
         wait.until(ExpectedConditions.elementToBeClickable(confirmDeleteButton)).click();
+
+        wait.until(ExpectedConditions.urlContains("boards"));
     }
 }
