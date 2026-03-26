@@ -1,9 +1,6 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -35,6 +32,9 @@ public class BoardPage {
     private final By editButton = By.cssSelector("button[data-testid='quick-card-editor-button']");
     private final By cardTitleInput = By.cssSelector("textarea[data-testid='quick-card-editor-card-title']");
     private final By saveButton = By.cssSelector("button[class='RYMF7FCviGjoRS ybVBgfOiuWZJtD orotyyeYQx_tso']");
+    private final By moveCardButton = By.cssSelector("button[data-testid='quick-card-editor-move']");
+    private final By selectListButton = By.cssSelector("div[data-testid='move-card-popover-select-list-destination']");
+    private final By moveConfirm = By.cssSelector("button[data-testid='move-card-popover-move-button']");
 
 
     private final By menuButton = By.cssSelector(
@@ -153,5 +153,79 @@ public class BoardPage {
         wait.until(ExpectedConditions.elementToBeClickable(confirmDeleteButton)).click();
 
         wait.until(ExpectedConditions.urlContains("boards"));
+    }
+
+    public void movingCard(String title, String targetListName) {
+        //Находим карточку
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@data-testid='card-name'][contains(text(),'" + title + "')]")
+        ));
+
+        //Наводим на карточку, чтобы появился элемент изменения
+        Actions actions = new Actions(driver);
+        actions.moveToElement(card).perform();
+
+        //Нажимаем на кнопку, чтобы изменить карточку
+        WebElement editBtn = wait.until(ExpectedConditions.elementToBeClickable(editButton));
+        editBtn.click();
+
+        //Нажимаем на перемещение
+        wait.until(ExpectedConditions.elementToBeClickable(moveCardButton)).click();
+
+        //Нажимаем на список
+        wait.until(ExpectedConditions.elementToBeClickable(selectListButton)).click();
+
+        //Находим input внутри списка
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("input[id='move-card-list-select']")
+        ));
+
+        //Вводим название списка
+        input.clear();
+        input.sendKeys(targetListName);
+
+        //Подтверждаем выбор
+        input.sendKeys(Keys.ENTER);
+
+        //Нажимаем кнопку перемещения
+        wait.until(ExpectedConditions.elementToBeClickable(moveConfirm)).click();
+
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(moveConfirm));
+    }
+
+    public boolean isCardInList(String cardTitle, String listName) {
+        //Получаем список всех колонок
+        List<WebElement> allLists = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(lists));
+
+        //Перебираем колонки по индексу
+        for (int i = 0; i < allLists.size(); i++) {
+            WebElement currentList = allLists.get(i);
+
+            //Находим заголовок колонки
+            WebElement header = currentList.findElement(By.cssSelector("h2"));
+
+            String currentListName = header.getText();
+
+            //Проверяем, что это нужная колонка
+            if (currentListName.equals(listName)) {
+
+                //Получаем список карточек в этой колонке
+                List<WebElement> cardsInCurrentList = currentList.findElements(cards);
+
+                //Перебираем карточки
+                for (int j = 0; j < cardsInCurrentList.size(); j++) {
+                    WebElement currentCard = cardsInCurrentList.get(j);
+
+                    String currentCardTitle = currentCard.getText();
+
+                    //Если нашли нужную возвращаем true
+                    if (currentCardTitle.equals(cardTitle)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        //Если ничего не нашли
+        return false;
     }
 }
