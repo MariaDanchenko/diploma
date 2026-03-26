@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class CRUD_Tests extends BaseTest {
+public class CRUD_Tests extends BaseAPITest {
 
     private String boardID;
     private final Logger logger = LogManager.getLogger(CRUD_Tests.class);

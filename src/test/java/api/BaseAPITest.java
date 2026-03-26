@@ -3,7 +3,7 @@ package api;
 import io.restassured.RestAssured;
 import org.testng.annotations.BeforeMethod;
 
-public class BaseTest {
+public class BaseAPITest {
 
     protected static final String API_KEY = System.getenv("TRELLO_API_KEY");
     protected static final String TOKEN = System.getenv("TRELLO_TOKEN");

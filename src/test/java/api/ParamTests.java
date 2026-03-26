@@ -8,7 +8,7 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class ParamTests extends BaseTest {
+public class ParamTests extends BaseAPITest {
 
     private List<String> boardIDs = new ArrayList<>(); // Список для хранения ID досок
 

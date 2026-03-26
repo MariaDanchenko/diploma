@@ -1,18 +1,21 @@
 package tests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import listener.Listener;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Listeners;
 import pages.HomePage;
 import pages.LoginPage;
 import pages.TrelloHomePage;
 
 import java.time.Duration;
 
+@Listeners(Listener.class)
 public class BaseTest {
 
     protected WebDriver driver;
@@ -20,6 +23,10 @@ public class BaseTest {
     protected LoginPage loginPage;
     protected HomePage homePage;
     protected TrelloHomePage trelloHomePage;
+
+    public WebDriver getDriver() {
+        return driver;
+    }
 
     @BeforeClass
     public void setUp() {
