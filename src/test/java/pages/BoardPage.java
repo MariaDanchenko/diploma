@@ -35,6 +35,8 @@ public class BoardPage {
     private final By moveCardButton = By.cssSelector("button[data-testid='quick-card-editor-move']");
     private final By selectListButton = By.cssSelector("div[data-testid='move-card-popover-select-list-destination']");
     private final By moveConfirm = By.cssSelector("button[data-testid='move-card-popover-move-button']");
+    private final By completeCardButton = By.cssSelector("button[data-testid='card-done-state-completion-button']");
+    private final By archiveCardButton = By.cssSelector("button[aria-label='Архивировать карточку']");
 
 
     private final By menuButton = By.cssSelector(
@@ -227,5 +229,42 @@ public class BoardPage {
         }
         //Если ничего не нашли
         return false;
+    }
+
+    public void completeCard(String cardTitle) {
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@data-testid='card-name'][contains(text(),'" + cardTitle + "')]")
+        ));
+
+        Actions actions = new Actions(driver);
+        actions.moveToElement(card).perform();
+
+        WebElement completeButton = wait.until(ExpectedConditions.elementToBeClickable(completeCardButton));
+        completeButton.click();
+    }
+
+    public boolean isCompleteButtonSelected() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(completeCardButton)).isSelected();
+        return true;
+    }
+
+    public void archiveCard(String cardTitle) {
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@data-testid='card-name'][contains(text(),'" + cardTitle + "')]")
+        ));
+
+        Actions actions = new Actions(driver);
+        actions.moveToElement(card).perform();
+
+        wait.until(ExpectedConditions.elementToBeClickable(archiveCardButton)).click();
+    }
+
+    public boolean isCardArchived(String cardTitle) {
+
+        List<WebElement> cards = driver.findElements(
+                By.xpath("//a[@data-testid='card-name' and contains(text(),'" + cardTitle + "')]")
+        );
+
+        return cards.isEmpty();
     }
 }
