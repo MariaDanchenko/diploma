@@ -179,4 +179,8 @@ public class TrelloHomePage {
         WebElement createBoard = wait.until(ExpectedConditions.visibilityOfElementLocated(createBoardButton));
         return createBoard.isDisplayed();
     }
+
+    public boolean isBoardVisible(String boardName) {
+        return !driver.findElements(By.xpath("//span[text()='" + boardName + "']")).isEmpty();
+    }
 }
