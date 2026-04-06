@@ -38,7 +38,9 @@ public class BaseTest {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         loginPage = new LoginPage(driver);
-        loginPage.login("mashadanchenko75@gmail.com", "Abkzabkz66");
+        String email = System.getenv("TRELLO_EMAIL");
+        String password = System.getenv("TRELLO_PASSWORD");
+        loginPage.login(email, password);
 
         wait.until(ExpectedConditions.urlContains("home"));
 
