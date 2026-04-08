@@ -13,7 +13,7 @@ public class LoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    private By usernameField = By.id("username-uid1");
+    private By usernameField = By.cssSelector("input[data-testid='username']");
     private By continueButton = By.id("login-submit");
     private By passwordField = By.id("password");
     private By errorMessage = By.xpath("//div[contains(text(), 'Неверный адрес электронной почты')]");

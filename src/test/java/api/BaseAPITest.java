@@ -1,6 +1,7 @@
 package api;
 
 import io.restassured.RestAssured;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
 public class BaseAPITest {
@@ -12,5 +13,12 @@ public class BaseAPITest {
     @BeforeMethod
     public void setUp() {
         RestAssured.baseURI = BASE_URL;
+    }
+
+    @BeforeClass
+    public void validateEnv() {
+        if (API_KEY == null || TOKEN == null) {
+            throw new IllegalStateException("API_KEY or TOKEN is not set");
+        }
     }
 }

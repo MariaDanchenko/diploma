@@ -19,7 +19,7 @@ public class AuthTests extends BaseAPITest {
     }
 
     @Test
-    public void tearInvalidCredentials() {
+    public void testInvalidCredentials() {
         given().
                 queryParam("key", "invalidKey").
                 queryParam("token", "invalidToken").
