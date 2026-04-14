@@ -1,22 +1,22 @@
 package pages;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.awt.*;
 import java.time.Duration;
 import java.util.List;
 
 public class TrelloHomePage {
 
-    private WebDriver driver;
-    private WebDriverWait wait;
+    private final WebDriver driver;
+    private final WebDriverWait wait;
 
     private final By profileButton = By.xpath("//button[@data-testid = 'header-member-menu-button']");
     private final By createMenuButton = By.cssSelector("button[data-testid = 'header-create-menu-button']");
     private final By createBoardButton = By.cssSelector("button[data-testid='header-create-board-button']");
-    private final By createBoardTile = By.cssSelector("[data-testid='create-board-tile']");
+    private final By createBoardModalTitleInput = By.cssSelector("input[data-testid='create-board-title-input']");
 
     private final By searchInput = By.cssSelector("input[data-testid='cross-product-search-input-skeleton']");
     private final By advancedSearchInput = By.cssSelector("input[data-testid='advanced-search-input']");
@@ -31,16 +31,69 @@ public class TrelloHomePage {
     private final By infoButton = By.cssSelector("button[data-testid = 'header-info-button']");
 
     private final By accountMenu = By.id("account-menu-account-section-title");
-    private final By boardsHeader = By.xpath("//h3[contains(text(),'ПРОСТРАНСТВА')]");
-    private final By templatesHeader = By.xpath("//h1[contains(text(),'категории')]");
 
     private final By infoMenu = By.id("header-info-menu-popover-content");
-    private final By notificationsMenu = By.cssSelector("h2[class = 'HsONwDlXlvyo7z']");
     private final By createBoard = By.cssSelector("button[data-testid = 'create-board-tile']");
 
     public TrelloHomePage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    /**
+     * Закрывает типичные блокирующие оверлеи (онбординг, cookie-баннеры, объявления), если они есть.
+     * Не бросает исключений, если попапа нет.
+     */
+    public void dismissBlockingOverlaysIfPresent() {
+        List<By> dismissSelectors = List.of(
+                By.id("onetrust-accept-btn-handler"),
+                By.cssSelector("button#onetrust-accept-btn-handler"),
+                By.xpath("//button[.//span[normalize-space()='Отклонить']]"),
+                By.xpath("//button[normalize-space()='Отклонить']"),
+                By.cssSelector("[role='dialog'] [data-testid='close-button']"),
+                By.cssSelector("[data-testid='close-button']"),
+                By.cssSelector("button[data-testid='popover-close-button']"),
+                By.xpath("//button[contains(@aria-label,'Close') or contains(@aria-label,'close')]")
+        );
+
+        long deadline = System.currentTimeMillis() + 8000;
+        int idleRounds = 0;
+        while (System.currentTimeMillis() < deadline && idleRounds < 2) {
+            boolean dismissedAny = false;
+            try {
+                new Actions(driver).pause(Duration.ofMillis(100)).sendKeys(Keys.ESCAPE).perform();
+            } catch (WebDriverException ignored) {
+            }
+
+            for (By selector : dismissSelectors) {
+                try {
+                    for (WebElement el : driver.findElements(selector)) {
+                        if (!el.isDisplayed()) {
+                            continue;
+                        }
+                        try {
+                            el.click();
+                        } catch (ElementClickInterceptedException | StaleElementReferenceException e) {
+                            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+                        }
+                        dismissedAny = true;
+                    }
+                } catch (StaleElementReferenceException ignored) {
+                }
+            }
+
+            if (dismissedAny) {
+                idleRounds = 0;
+            } else {
+                idleRounds++;
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
     }
 
     public boolean isOnHomePage() {
@@ -54,13 +107,12 @@ public class TrelloHomePage {
     }
 
     public boolean isSearchInputDisplayed() {
-        return driver.findElement(searchInput).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput)).isDisplayed();
     }
 
     public void openProfileMenu() {
-
-        WebElement profile = wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton));
-        profile.click();
+        dismissBlockingOverlaysIfPresent();
+        safeClick(profileButton);
     }
 
     public boolean isProfileMenuOpened() {
@@ -69,55 +121,47 @@ public class TrelloHomePage {
     }
 
     public void openBoardsPage() {
-
-        wait.until(ExpectedConditions.elementToBeClickable(boardsLink)).click();
+        safeClick(boardsLink);
     }
 
     public boolean isBoardsPageOpened() {
-
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(boardsHeader)).isDisplayed();
+        wait.until(ExpectedConditions.urlContains("/boards"));
+        return true;
     }
 
     public void openTemplatesPage() {
-
-        wait.until(ExpectedConditions.elementToBeClickable(templatesLink)).click();
+        safeClick(templatesLink);
     }
 
     public boolean isTemplatesPageOpened() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(templatesHeader)).isDisplayed();
+        wait.until(ExpectedConditions.urlContains("/templates"));
+        return true;
     }
 
     public void goToHomePage() {
+        safeClick(homeLink);
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton));
+        } catch (TimeoutException ignored) {
+        }
+        dismissBlockingOverlaysIfPresent();
+    }
 
-        wait.until(ExpectedConditions.elementToBeClickable(homeLink)).click();
+    private void safeClick(By locator) {
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+        } catch (ElementClickInterceptedException | StaleElementReferenceException e) {
+            WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        }
     }
 
     public void openCreateMenu() {
-
-        wait.until(ExpectedConditions.elementToBeClickable(createMenuButton)).click();
+        safeClick(createMenuButton);
     }
 
     public void clickCreateBoard() {
-        wait.until(ExpectedConditions.elementToBeClickable(createBoardButton)).click();
-    }
-
-    public CreateBoardPage openCreateBoardModal() {
-        openCreateMenu();
-
-        WebElement createBoardButton = wait.until(ExpectedConditions.elementToBeClickable(this.createBoardButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBoardButton);
-
-        WebElement createBoardTile = wait.until(ExpectedConditions.elementToBeClickable(this.createBoardTile));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", createBoardTile);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBoardTile);
-
-        return new CreateBoardPage(driver);
-    }
-
-    public BoardPage createBoard(String boardName) {
-        CreateBoardPage createBoardPage = openCreateBoardModal();
-
-        return createBoardPage.createBoard(boardName);
+        safeClick(createBoardButton);
     }
 
     public void openSearchPage() {
@@ -130,24 +174,24 @@ public class TrelloHomePage {
     }
 
     public boolean isSearchResultRelevant(String expectedText) {
-
+        final List<WebElement> results;
         try {
-            List<WebElement> results =
-                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResults));
-
-            if (results.isEmpty()) {
+            results = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResults));
+        } catch (TimeoutException e) {
+            if (driver.findElements(searchResults).isEmpty()) {
                 return false;
             }
-
-            for (WebElement result : results) {
-                if (result.getText().contains(expectedText)) {
-                    return true; //Если хотя бы 1 результат содержит текст
-                }
-            }
-            return false; //Если ни один результат не содержит текст
-        } catch (Exception e) {
-            return false; //Если результатов нет вообще
+            throw new TimeoutException(
+                    "Search hits are present in the DOM but did not become visible in time "
+                            + "(slow UI, overlay, or outdated locators).",
+                    e);
         }
+        for (WebElement result : results) {
+            if (result.getText().contains(expectedText)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isNoSearchResults() {
@@ -155,13 +199,12 @@ public class TrelloHomePage {
     }
 
     public void openNotifications() {
-
-        wait.until(ExpectedConditions.elementToBeClickable(notificationsButton)).click();
+        safeClick(notificationsButton);
     }
 
     public void openInfo() {
-
-        wait.until(ExpectedConditions.elementToBeClickable(infoButton)).click();
+        dismissBlockingOverlaysIfPresent();
+        safeClick(infoButton);
     }
 
     public boolean isInfoVisible() {
@@ -170,9 +213,16 @@ public class TrelloHomePage {
     }
 
     public boolean isNotificationsVisible() {
-        WebElement textNotificationsMenu = wait.until(ExpectedConditions.
-                visibilityOfElementLocated(notificationsMenu));
-        return textNotificationsMenu.isDisplayed();
+        WebElement notifications = wait.until(ExpectedConditions.visibilityOfElementLocated(notificationsButton));
+        String controlsId = notifications.getAttribute("aria-controls");
+        if (controlsId == null || controlsId.isEmpty()) {
+            controlsId = notifications.getAttribute("aria-owns");
+        }
+        if (controlsId != null && !controlsId.isEmpty()) {
+            return !driver.findElements(By.id(controlsId)).isEmpty();
+        }
+        String expanded = notifications.getAttribute("aria-expanded");
+        return "true".equalsIgnoreCase(expanded);
     }
 
     public boolean isCreateButtonOpened() {
@@ -180,7 +230,21 @@ public class TrelloHomePage {
         return createBoard.isDisplayed();
     }
 
+    public boolean isCreateBoardModalOpened() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(createBoardModalTitleInput)).isDisplayed();
+    }
+
     public boolean isBoardVisible(String boardName) {
         return !driver.findElements(By.xpath("//span[text()='" + boardName + "']")).isEmpty();
+    }
+
+    public boolean isBoardVisibleByShortLink(String shortLink) {
+        return !driver.findElements(By.cssSelector("a[href*='/b/" + shortLink + "']")).isEmpty();
+    }
+
+    public boolean isBoardVisibleByShortLinkAndName(String shortLink, String boardName) {
+        return !driver.findElements(By.xpath(
+                "//a[contains(@href,'/b/" + shortLink + "') and .//span[text()='" + boardName + "']]"
+        )).isEmpty();
     }
 }

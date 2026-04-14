@@ -65,9 +65,12 @@ public class NavigationTests extends BaseTest {
     @Test
     public void testCreateMenu() {
         trelloHomePage.openCreateMenu();
-        trelloHomePage.clickCreateBoard();
+        Assert.assertTrue(trelloHomePage.isCreateButtonOpened(), "Create menu is not opened");
 
-        Assert.assertTrue(trelloHomePage.isOnHomePage());
+        trelloHomePage.clickCreateBoard();
+        Assert.assertTrue(trelloHomePage.isCreateBoardModalOpened(), "Create board modal is not opened");
+
+        trelloHomePage.goToHomePage();
     }
 
     @Test

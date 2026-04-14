@@ -1,22 +1,31 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
 
 public class LoginPage {
 
-    private WebDriver driver;
-    private WebDriverWait wait;
+    private final WebDriver driver;
+    private final WebDriverWait wait;
 
-    private By usernameField = By.cssSelector("input[data-testid='username']");
-    private By continueButton = By.id("login-submit");
-    private By passwordField = By.id("password");
-    private By errorMessage = By.xpath("//div[contains(text(), 'Неверный адрес электронной почты')]");
+    private final By usernameField = By.cssSelector("input[data-testid='username'], input[name='username']");
+    private final By continueButton = By.cssSelector("#login-submit, [data-testid='login-submit']");
+    private final By passwordField = By.cssSelector("input#password, input[name='password']");
+    private final List<By> authErrorLocators = List.of(
+            By.cssSelector("[data-testid='form-error--content']"),
+            By.cssSelector("[data-testid='form-error']"),
+            By.cssSelector("div[role='alert']"),
+            By.id("username-error"),
+            By.cssSelector("#login-error")
+    );
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
@@ -34,8 +43,8 @@ public class LoginPage {
     }
 
     public void clickContinueButton() {
-
-        driver.findElement(continueButton).click();
+        WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(continueButton));
+        continueBtn.click();
     }
 
     public HomePage login(String username, String password) {
@@ -49,7 +58,37 @@ public class LoginPage {
         return new HomePage(driver);
     }
 
-    public String getErrorMessage() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage)).getText();
+    /**
+     * Только шаг с логином/email на первом экране Atlassian (без пароля).
+     * Нужен, чтобы проверить отклонение невалидных данных без сценария двухшагового входа.
+     */
+    public void submitUsernameStep(String usernameOrEmail) {
+        enterUsername(usernameOrEmail);
+        clickContinueButton();
+    }
+
+    public boolean isAuthErrorVisible() {
+        WebDriverWait errorWait = new WebDriverWait(driver, Duration.ofSeconds(12));
+        try {
+            return errorWait.until(driver -> {
+                try {
+                    WebElement user = driver.findElement(usernameField);
+                    if ("true".equalsIgnoreCase(user.getAttribute("aria-invalid"))) {
+                        return true;
+                    }
+                } catch (NoSuchElementException ignored) {
+                }
+                for (By by : authErrorLocators) {
+                    for (WebElement el : driver.findElements(by)) {
+                        if (el.isDisplayed()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 }

@@ -1,5 +1,7 @@
 package api;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.annotations.*;
 
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class ParamTests extends BaseAPITest {
 
+    private static final Logger logger = LogManager.getLogger(ParamTests.class);
     private List<String> boardIDs = new ArrayList<>(); // Список для хранения ID досок
 
     @DataProvider(name = "boardNames")
@@ -36,12 +39,12 @@ public class ParamTests extends BaseAPITest {
                 path("id"); // Извлекаем ID созданной доски
 
         boardIDs.add(boardID); // Сохраняем ID в список
-        System.out.println("Создана доска с ID: " + boardID);
+        logger.info("Created board with ID: {}", boardID);
     }
 
-    @AfterClass
+    @AfterMethod(alwaysRun = true)
     public void cleanupBoards() {
-        for (String boardID : boardIDs) {
+        for (String boardID : new ArrayList<>(boardIDs)) {
             given().
                     queryParam("key", API_KEY).
                     queryParam("token", TOKEN).
@@ -49,7 +52,8 @@ public class ParamTests extends BaseAPITest {
                     delete("/boards/" + boardID).
                     then().
                     statusCode(200);
-            System.out.println("Удалена доска с ID: " + boardID);
+            logger.info("Deleted board with ID: {}", boardID);
+            boardIDs.remove(boardID);
         }
     }
 }

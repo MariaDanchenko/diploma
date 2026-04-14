@@ -1,6 +1,7 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -11,13 +12,10 @@ import java.time.Duration;
 
 public class CreateBoardPage {
 
-    private WebDriver driver;
-    private WebDriverWait wait;
+    private final WebDriver driver;
+    private final WebDriverWait wait;
 
-    private final By boardBackground = By.cssSelector("button[style*='rgb(220, 234, 254)']");
-    private final By backgroundCheckIcon = By.cssSelector("span[data-testid='CheckIcon']");
     private final By boardTitle = By.cssSelector("input[data-testid='create-board-title-input']");
-    private final By visibilityDropdown = By.cssSelector("div[data-testid='create-board-select-visibility']");
     private final By createButton = By.cssSelector("button[data-testid='create-board-submit-button']");
 
     public CreateBoardPage(WebDriver driver) {
@@ -25,38 +23,21 @@ public class CreateBoardPage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    public void selectBackground() {
-        WebElement background = wait.until(ExpectedConditions.elementToBeClickable(boardBackground));
-        background.click();
-    }
-
-    public boolean isBackgroundSelected() {
-        return driver.findElement(backgroundCheckIcon).isDisplayed();
-    }
-
     public void inputTitle(String text) {
-        driver.findElement(boardTitle).sendKeys(text);
+        WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(boardTitle));
+        titleInput.sendKeys(text);
     }
-
-    public String getBoardTitle() {
-        return driver.findElement(boardTitle).getAttribute("value");
-    }
-
 
     public void clickCreateButton() {
-        driver.findElement(createButton).click();
+        WebElement createBtn = wait.until(ExpectedConditions.presenceOfElementLocated(createButton));
+        safeClick(createBtn);
     }
 
-    public BoardPage createBoard(String title) {
-        selectBackground();
-
-        WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(boardTitle));
-        titleInput.clear();
-        titleInput.sendKeys(title);
-
-        WebElement createBtn = wait.until(ExpectedConditions.elementToBeClickable(createButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBtn);
-
-        return new BoardPage(driver);
+    private void safeClick(WebElement element) {
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(element)).click();
+        } catch (ElementClickInterceptedException e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        }
     }
 }

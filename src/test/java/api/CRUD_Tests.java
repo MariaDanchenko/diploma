@@ -11,12 +11,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class CRUD_Tests extends BaseAPITest {
 
-    private String boardID;
     private final Logger logger = LogManager.getLogger(CRUD_Tests.class);
 
-    @Test(priority = 1)
+    @Test
     public void testCreateBoard() {
-        String boardName = "Test Board ";
+        String boardName = "Test Board " + System.currentTimeMillis();
 
         Response response = given().
                 queryParam("key", API_KEY).
@@ -29,12 +28,57 @@ public class CRUD_Tests extends BaseAPITest {
                 body("name", equalTo(boardName)).
                 extract().response();
 
-        boardID = response.path("id");
+        String boardID = response.path("id");
         logger.info("Successfully created board with ID: {}", boardID);
+
+        deleteBoard(boardID);
     }
 
-    @Test(priority = 2, dependsOnMethods = "testCreateBoard")
+    @Test
     public void testGetBoard() {
+        String boardID = createBoard("Get Board " + System.currentTimeMillis());
+        try {
+            given().
+                    queryParam("key", API_KEY).
+                    queryParam("token", TOKEN).
+                    when().
+                    get("/boards/" + boardID).
+                    then().
+                    statusCode(200).
+                    body("id", equalTo(boardID));
+
+            logger.info("Successfully fetched board with ID: {}", boardID);
+        } finally {
+            deleteBoard(boardID);
+        }
+    }
+
+    @Test
+    public void testUpdateBoard() {
+        String newName = "Updated Board Name";
+        String boardID = createBoard("Update Board " + System.currentTimeMillis());
+        try {
+            given().
+                    queryParam("key", API_KEY).
+                    queryParam("token", TOKEN).
+                    queryParam("name", newName).
+                    when().
+                    put("/boards/" + boardID).
+                    then().
+                    statusCode(200).
+                    body("name", equalTo(newName));
+
+            logger.info("Successfully updated board with ID: {}. New name: {}", boardID, newName);
+        } finally {
+            deleteBoard(boardID);
+        }
+    }
+
+    @Test
+    public void testDeleteBoard() {
+        String boardID = createBoard("Delete Board " + System.currentTimeMillis());
+
+        deleteBoard(boardID);
 
         given().
                 queryParam("key", API_KEY).
@@ -42,32 +86,25 @@ public class CRUD_Tests extends BaseAPITest {
                 when().
                 get("/boards/" + boardID).
                 then().
-                statusCode(200).
-                body("id", equalTo(boardID));
+                statusCode(404);
 
-        logger.info("Successfully fetched board with ID: {}", boardID);
+        logger.info("Successfully deleted board with ID: {}", boardID);
     }
 
-    @Test(priority = 3, dependsOnMethods = "testGetBoard")
-    public void testUpdateBoard() {
-        String newName = "Updated Board Name";
-
-        given().
+    private String createBoard(String boardName) {
+        return given().
                 queryParam("key", API_KEY).
                 queryParam("token", TOKEN).
-                queryParam("name", newName).
+                queryParam("name", boardName).
                 when().
-                put("/boards/" + boardID).
+                post("/boards/").
                 then().
                 statusCode(200).
-                body("name", equalTo(newName));
-
-        logger.info("Successfully updated board with ID: {}. New name: {}", boardID, newName);
+                extract().
+                path("id");
     }
 
-    @Test(priority = 4, dependsOnMethods = "testUpdateBoard")
-    public void testDeleteBoard() {
-
+    private void deleteBoard(String boardID) {
         given().
                 queryParam("key", API_KEY).
                 queryParam("token", TOKEN).
@@ -75,7 +112,5 @@ public class CRUD_Tests extends BaseAPITest {
                 delete("/boards/" + boardID).
                 then().
                 statusCode(200);
-
-        logger.info("Successfully deleted board with ID: {}", boardID);
     }
 }

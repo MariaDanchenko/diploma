@@ -2,56 +2,91 @@ package tests;
 
 import api.client.BoardApiClient;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-import pages.BoardPage;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApiUiTests extends BaseTest {
 
     private final BoardApiClient api = new BoardApiClient();
+    private final List<String> boardsToCleanup = new ArrayList<>();
 
     @Test
     public void testCreateBoard() {
-        String boardName = "API_UI_";
+        String boardName = "API_UI_" + UUID.randomUUID();
 
-        String boardId = api.createBoard(boardName);
+        BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
+        String boardId = boardData.getId();
+        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        boardsToCleanup.add(boardId);
 
         trelloHomePage.openBoardsPage();
 
         driver.navigate().refresh();
 
-        wait.until(driver1 -> trelloHomePage.isBoardVisible(boardName));
+        wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
 
-        Assert.assertTrue(trelloHomePage.isBoardVisible(boardName), "Доска не появилась");
+        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLink(boardShortLink), "Доска не появилась");
 
         api.deleteBoard(boardId);
+        boardsToCleanup.remove(boardId);
 
         driver.navigate().refresh();
 
-        wait.until(driver1 -> !trelloHomePage.isBoardVisible(boardName));
+        wait.until(driver1 -> !trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
 
-        Assert.assertFalse(trelloHomePage.isBoardVisible(boardName), "Доска не удалилась");
+        Assert.assertFalse(trelloHomePage.isBoardVisibleByShortLink(boardShortLink), "Доска не удалилась");
     }
 
     @Test
     public void testUpdateBoard() {
-        String initialName = "API_UI_Update_";
-        String updatedName = "Updated_Name_";
+        String initialName = "API_UI_Update_" + UUID.randomUUID();
+        String updatedName = "Updated_Name_" + UUID.randomUUID();
 
-        String boardId = api.createBoard(initialName);
+        BoardApiClient.BoardData boardData = api.createBoardWithUrl(initialName);
+        String boardId = boardData.getId();
+        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        boardsToCleanup.add(boardId);
 
         trelloHomePage.openBoardsPage();
         driver.navigate().refresh();
 
-        wait.until(driver1 -> trelloHomePage.isBoardVisible(initialName));
-        Assert.assertTrue(trelloHomePage.isBoardVisible(initialName));
+        wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, initialName));
+        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, initialName));
 
         api.updateBoard(boardId, updatedName);
 
         driver.navigate().refresh();
 
-        wait.until(driver1 -> trelloHomePage.isBoardVisible(updatedName));
-        Assert.assertTrue(trelloHomePage.isBoardVisible(updatedName), "Имя не обновилось");
+        wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, updatedName));
+        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, updatedName),
+                "Имя не обновилось");
 
         api.deleteBoard(boardId);
+        boardsToCleanup.remove(boardId);
+    }
+
+    private String extractBoardShortLink(String boardUrl) {
+        Matcher matcher = Pattern.compile("/b/([^/]+)").matcher(boardUrl);
+        if (!matcher.find()) {
+            throw new IllegalStateException("Cannot extract board short link from URL: " + boardUrl);
+        }
+        return matcher.group(1);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void cleanupBoards() {
+        for (String boardId : new ArrayList<>(boardsToCleanup)) {
+            try {
+                api.deleteBoard(boardId);
+            } finally {
+                boardsToCleanup.remove(boardId);
+            }
+        }
     }
 }

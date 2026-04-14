@@ -1,11 +1,14 @@
 package api.client;
 
+import api.TrelloApiConfig;
+import io.restassured.response.Response;
+
 import static io.restassured.RestAssured.given;
 
 public class BoardApiClient {
 
-    private final String API_KEY = System.getenv("TRELLO_API_KEY");
-    private final String TOKEN = System.getenv("TRELLO_TOKEN");
+    private final String API_KEY = TrelloApiConfig.API_KEY;
+    private final String TOKEN = TrelloApiConfig.TOKEN;
 
     public String createBoard(String name) {
 
@@ -19,6 +22,24 @@ public class BoardApiClient {
                 .statusCode(200)
                 .extract()
                 .path("id");
+    }
+
+    public BoardData createBoardWithUrl(String name) {
+        Response response = given()
+                .queryParam("key", API_KEY)
+                .queryParam("token", TOKEN)
+                .queryParam("name", name)
+                .when()
+                .post("https://api.trello.com/1/boards/")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        String boardId = response.path("id");
+        String boardUrl = response.path("url");
+
+        return new BoardData(boardId, boardUrl);
     }
 
     public void deleteBoard(String boardId) {
@@ -68,5 +89,71 @@ public class BoardApiClient {
                 .statusCode(200)
                 .extract()
                 .path("id");
+    }
+
+    public void archiveCard(String cardId) {
+        given()
+                .queryParam("key", API_KEY)
+                .queryParam("token", TOKEN)
+                .queryParam("closed", true)
+                .when()
+                .put("https://api.trello.com/1/cards/" + cardId)
+                .then()
+                .statusCode(200);
+    }
+
+    public boolean isCardArchived(String cardId) {
+        Boolean isClosed = given()
+                .queryParam("key", API_KEY)
+                .queryParam("token", TOKEN)
+                .when()
+                .get("https://api.trello.com/1/cards/" + cardId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("closed");
+        return Boolean.TRUE.equals(isClosed);
+    }
+
+    public String getFirstListIdByBoardShortLink(String boardShortLink) {
+        return given()
+                .queryParam("key", API_KEY)
+                .queryParam("token", TOKEN)
+                .when()
+                .get("https://api.trello.com/1/boards/" + boardShortLink + "/lists")
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("[0].id");
+    }
+
+    public String getBoardIdByShortLink(String boardShortLink) {
+        return given()
+                .queryParam("key", API_KEY)
+                .queryParam("token", TOKEN)
+                .when()
+                .get("https://api.trello.com/1/boards/" + boardShortLink)
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("id");
+    }
+
+    public static class BoardData {
+        private final String id;
+        private final String url;
+
+        public BoardData(String id, String url) {
+            this.id = id;
+            this.url = url;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 }

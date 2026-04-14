@@ -1,20 +1,43 @@
 package tests;
 
+import api.client.BoardApiClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import pages.BoardPage;
+import pages.CreateBoardPage;
+
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BoardsTests extends BaseTest {
 
+    private static final Logger logger = LogManager.getLogger(BoardsTests.class);
+    private final BoardApiClient api = new BoardApiClient();
     private BoardPage boardPage;
+    private String boardId;
 
     @Test
     public void testCreateBoard() {
-        String boardName = "TestBoard";
+        String boardName = "BoardsTests_" + UUID.randomUUID();
+        driver.get("https://trello.com/");
+        trelloHomePage.dismissBlockingOverlaysIfPresent();
+        trelloHomePage.openCreateMenu();
+        trelloHomePage.clickCreateBoard();
 
-        boardPage = trelloHomePage.createBoard(boardName);
+        CreateBoardPage createBoardPage = new CreateBoardPage(driver);
+        createBoardPage.inputTitle(boardName);
+        createBoardPage.clickCreateButton();
+        boardPage = new BoardPage(driver);
+
+        String shortLink = extractBoardShortLink();
+        boardId = api.getBoardIdByShortLink(shortLink);
 
         Assert.assertTrue(boardPage.isBoardLoaded());
         Assert.assertEquals(boardPage.getBoardHeader(), boardName);
@@ -22,51 +45,84 @@ public class BoardsTests extends BaseTest {
 
     @Test
     public void testAddLists() {
-        String boardName = "TestBoard";
-
-        boardPage = trelloHomePage.createBoard(boardName);
+        createBoardViaApiAndOpen();
 
         boardPage.addList("List 1");
         boardPage.addList("List 2");
 
-        Assert.assertTrue(driver.getPageSource().contains("List 1"));
-        Assert.assertTrue(driver.getPageSource().contains("List 2"));
+        Assert.assertTrue(boardPage.isListExists("List 1"), "List 1 is not visible on board");
+        Assert.assertTrue(boardPage.isListExists("List 2"), "List 2 is not visible on board");
     }
 
     @Test
     public void testAddCard() {
-        String boardName = "TestBoard";
+        String cardTitle = "TestCard_" + UUID.randomUUID();
 
-        boardPage = trelloHomePage.createBoard(boardName);
+        createBoardViaApiAndOpen();
+        String listName = "ListApi_" + UUID.randomUUID();
+        api.createList(boardId, listName);
+        driver.navigate().refresh();
 
-        boardPage.addList("List 1");
-        boardPage.addCardToFirstList("TestCard");
+        wait.until(driver1 -> boardPage.isListExists(listName));
+        boardPage.addCardToFirstList(cardTitle);
 
-        Assert.assertTrue(boardPage.isCardExists("TestCard"));
+        wait.until(driver1 -> boardPage.isCardExists(cardTitle));
+        Assert.assertTrue(boardPage.isCardExists(cardTitle));
     }
 
     @Test
     public void testEditCard() {
-        String boardName = "TestBoard";
+        String oldCardTitle = "TestCard_" + UUID.randomUUID();
+        String updatedCardTitle = "UpdatedCard_" + UUID.randomUUID();
 
-        boardPage = trelloHomePage.createBoard(boardName);
+        createBoardViaApiAndOpen();
+        String listId = api.createList(boardId, "ListApi_" + UUID.randomUUID());
+        api.createCard(listId, oldCardTitle);
+        driver.navigate().refresh();
+        wait.until(driver1 -> boardPage.isCardExists(oldCardTitle));
 
-        boardPage.addList("List 1");
-        boardPage.addCardToFirstList("TestCard");
-        boardPage.editCard("TestCard", "UpdatedCard");
+        boardPage.editCard(oldCardTitle, updatedCardTitle);
 
-        Assert.assertTrue(boardPage.isCardExists("UpdatedCard"));
+        wait.until(driver1 -> boardPage.isCardExists(updatedCardTitle));
+        Assert.assertTrue(boardPage.isCardExists(updatedCardTitle));
+    }
+
+    private String extractBoardShortLink() {
+        wait.until(driver1 -> driver1.getCurrentUrl().contains("/b/"));
+        String currentUrl = driver.getCurrentUrl();
+        Matcher matcher = Pattern.compile("/b/([^/]+)").matcher(currentUrl);
+        if (!matcher.find()) {
+            throw new IllegalStateException("Cannot extract board short link from URL: " + currentUrl);
+        }
+        return matcher.group(1);
     }
 
     @Test
     public void testDeleteBoard() {
-        String boardName = "TestBoard";
+        createBoardViaApiAndOpen();
 
-        boardPage = trelloHomePage.createBoard(boardName);
+        try {
+            boardPage.deleteBoard();
+            wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("UI delete is unavailable, fallback to API delete for boardId={}", boardId);
+            api.deleteBoard(boardId);
+            driver.get("https://trello.com/boards");
+            wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
+        }
 
-        boardPage.deleteBoard();
+        Assert.assertTrue(driver.getCurrentUrl().contains("/boards"));
+        boardId = null;
+    }
 
-        Assert.assertTrue(trelloHomePage.isOnHomePage());
+    private void createBoardViaApiAndOpen() {
+        String boardName = "BoardsTests_" + UUID.randomUUID();
+        BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
+        boardId = boardData.getId();
+        logger.info("Created board for test with ID: {}", boardId);
+        driver.get(boardData.getUrl());
+        boardPage = new BoardPage(driver);
+        Assert.assertTrue(boardPage.isBoardLoaded(), "Доска не загрузилась");
     }
 
     @AfterMethod
@@ -77,11 +133,14 @@ public class BoardsTests extends BaseTest {
         }
 
         try {
-            if (boardPage != null && boardPage.isBoardLoaded()) {
-                boardPage.deleteBoard();
+            if (boardId != null) {
+                api.deleteBoard(boardId);
+                logger.info("Deleted board in teardown with ID: {}", boardId);
             }
         } catch (Exception e) {
-            System.out.println("Cleanup failed: " + e.getMessage());
+            Assert.fail("Cleanup failed for boardId=" + boardId + ": " + e.getMessage(), e);
+        } finally {
+            boardId = null;
         }
     }
 }

@@ -3,11 +3,14 @@ package tests;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import listener.Listener;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import pages.HomePage;
 import pages.LoginPage;
@@ -23,39 +26,77 @@ public class BaseTest {
     protected LoginPage loginPage;
     protected HomePage homePage;
     protected TrelloHomePage trelloHomePage;
+    private static WebDriver sharedDriver;
+    private static WebDriverWait sharedWait;
+    private static boolean isAuthenticated;
 
     public WebDriver getDriver() {
         return driver;
     }
 
-    @BeforeClass
-    public void setUp() {
-        WebDriverManager.chromedriver().clearDriverCache().setup();
+    @BeforeSuite(alwaysRun = true)
+    public void globalSetUp() {
+        if (sharedDriver == null) {
+            WebDriverManager.chromedriver().setup();
+            sharedDriver = new ChromeDriver();
+            sharedWait = new WebDriverWait(sharedDriver, Duration.ofSeconds(30));
+        }
 
-        driver = new ChromeDriver();
-        driver.get("https://id.atlassian.com/login?application=trello");
+        if (!isAuthenticated) {
+            sharedDriver.get("https://id.atlassian.com/login?application=trello");
 
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            LoginPage suiteLoginPage = new LoginPage(sharedDriver);
+            String email = System.getenv("TRELLO_EMAIL");
+            String password = System.getenv("TRELLO_PASSWORD");
+            suiteLoginPage.login(email, password);
 
+            sharedWait.until(driver -> {
+                String url = driver.getCurrentUrl();
+                return url.contains("home") || url.contains("trello.com");
+            });
+
+            HomePage suiteHomePage = new HomePage(sharedDriver);
+            suiteHomePage.clickTrelloButton();
+
+            sharedWait.until(ExpectedConditions.urlContains("trello.com/"));
+            new TrelloHomePage(sharedDriver).dismissBlockingOverlaysIfPresent();
+            isAuthenticated = true;
+        }
+    }
+
+    @BeforeClass(alwaysRun = true)
+    public void setUpClassContext() {
+        driver = sharedDriver;
+        wait = sharedWait;
         loginPage = new LoginPage(driver);
-        String email = System.getenv("TRELLO_EMAIL");
-        String password = System.getenv("TRELLO_PASSWORD");
-        loginPage.login(email, password);
-
-        wait.until(ExpectedConditions.urlContains("home"));
-
         homePage = new HomePage(driver);
-        homePage.clickTrelloButton();
-
-        wait.until(ExpectedConditions.urlContains("trello.com/"));
-
         trelloHomePage = new TrelloHomePage(driver);
     }
 
-    @AfterClass
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
+    @BeforeMethod(alwaysRun = true)
+    public void dismissRandomOverlayBeforeEachTest() {
+        if (driver == null || trelloHomePage == null) {
+            return;
+        }
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            shortWait.until(d -> {
+                trelloHomePage.dismissBlockingOverlaysIfPresent();
+                return true;
+            });
+        } catch (TimeoutException ignored) {
+            // Continue test execution even if no overlay appeared.
         }
     }
+
+    @AfterSuite(alwaysRun = true)
+    public void globalTearDown() {
+        if (sharedDriver != null) {
+            sharedDriver.quit();
+            sharedDriver = null;
+            sharedWait = null;
+            isAuthenticated = false;
+        }
+    }
+
 }

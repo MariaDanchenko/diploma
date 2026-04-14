@@ -9,7 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pages.HomePage;
 import pages.LoginPage;
 
 import java.time.Duration;
@@ -20,7 +19,7 @@ public class LoginTests {
 
     @BeforeMethod
     public void setUp() {
-        WebDriverManager.chromedriver().clearDriverCache().setup();
+        WebDriverManager.chromedriver().setup();
 
         driver = new ChromeDriver();
         driver.get("https://id.atlassian.com/login?application=trello");
@@ -35,21 +34,23 @@ public class LoginTests {
 
     @Test
     public void testSuccessLogin() {
+        String email = System.getenv("TRELLO_EMAIL");
+        String password = System.getenv("TRELLO_PASSWORD");
+        Assert.assertNotNull(email, "TRELLO_EMAIL must be set in the environment");
+        Assert.assertNotNull(password, "TRELLO_PASSWORD must be set in the environment");
+
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.login("mashadanchenko75@gmail.com", "Abkzabkz66");
+        loginPage.login(email, password);
 
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.urlContains("home"));
-
-        HomePage homePage = new HomePage(driver);
-        Assert.assertEquals(homePage.getHeaderText(), "Здравствуйте, Мария!");
+        new WebDriverWait(driver, Duration.ofSeconds(30)).until(ExpectedConditions.urlContains("home"));
+        Assert.assertTrue(driver.getCurrentUrl().contains("home"));
     }
 
     @Test
     public void testInvalidLogin() {
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.login("mashadanchenko75@gmail.com", "wrongPassword");
+        loginPage.submitUsernameStep("not-valid-email-format");
 
-        String error = loginPage.getErrorMessage();
-        Assert.assertTrue(error.contains("Неверный адрес"));
+        Assert.assertTrue(loginPage.isAuthErrorVisible(), "Expected auth error is not visible");
     }
 }

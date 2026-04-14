@@ -6,9 +6,9 @@ import org.testng.annotations.BeforeMethod;
 
 public class BaseAPITest {
 
-    protected static final String API_KEY = System.getenv("TRELLO_API_KEY");
-    protected static final String TOKEN = System.getenv("TRELLO_TOKEN");
-    protected static final String BASE_URL = "https://api.trello.com/1";
+    protected static final String API_KEY = TrelloApiConfig.API_KEY;
+    protected static final String TOKEN = TrelloApiConfig.TOKEN;
+    protected static final String BASE_URL = TrelloApiConfig.BASE_URL;
 
     @BeforeMethod
     public void setUp() {
@@ -17,8 +17,6 @@ public class BaseAPITest {
 
     @BeforeClass
     public void validateEnv() {
-        if (API_KEY == null || TOKEN == null) {
-            throw new IllegalStateException("API_KEY or TOKEN is not set");
-        }
+        TrelloApiConfig.validateEnv();
     }
 }

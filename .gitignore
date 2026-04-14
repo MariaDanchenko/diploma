@@ -4,11 +4,12 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Test / Allure / local run output (do not commit) ###
+allure-results/
+screenshots/
+
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -40,17 +41,3 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-/allure-results/00c3869e-cbd7-47ae-a5c0-145d82562b9d-container.json
-/allure-results/4d468d9c-487f-458e-a9a4-b70680126071-container.json
-/allure-results/5bc1c641-d20d-476c-b9e7-9f059bc20acf-result.json
-/allure-results/10fc4c6c-812f-411a-a58a-c139a27045b7-container.json
-/allure-results/54f35c63-ca79-4286-a1f9-323926732c8e-result.json
-/allure-results/066cc4c2-4d14-4d6c-9894-3c97d292b197-container.json
-/allure-results/90e9070d-de35-4546-9168-d7d3f062585e-container.json
-/allure-results/94b973c2-bb09-454a-9eea-843a615cc6eb-container.json
-/allure-results/529dfe89-be60-41d7-81ff-58b0c22808c9-container.json
-/allure-results/692d4246-006a-47c1-bb83-8202ea168615-result.json
-/allure-results/c53661b3-4989-4edd-8d09-be429bfb9cda-result.json
-/allure-results/f0656eb4-dc9a-4698-b308-c3f61fffa85f-container.json
-/allure-results/fde50dc2-658a-4655-bf71-2bf33dd9354c-result.json
-/screenshots/testAddCard.png

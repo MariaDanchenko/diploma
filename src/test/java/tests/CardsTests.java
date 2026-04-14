@@ -1,53 +1,77 @@
 package tests;
 
+import api.client.BoardApiClient;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.BoardPage;
 
+import java.util.UUID;
+
 public class CardsTests extends BaseTest {
 
+    private final BoardApiClient api = new BoardApiClient();
     private BoardPage boardPage;
+    private String boardId;
+    private String toDoListId;
+
+    @BeforeMethod
+    public void prepareBoard() {
+        String boardName = "CardsTests_" + UUID.randomUUID();
+        BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
+        boardId = boardData.getId();
+
+        toDoListId = api.createList(boardId, "To Do");
+        api.createList(boardId, "В процессе");
+
+        driver.get(boardData.getUrl());
+        boardPage = new BoardPage(driver);
+        Assert.assertTrue(boardPage.isBoardLoaded(), "Доска не загрузилась");
+        trelloHomePage.dismissBlockingOverlaysIfPresent();
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void cleanupBoard() {
+        if (boardId != null) {
+            api.deleteBoard(boardId);
+        }
+    }
 
     @Test
     public void testMovingCard() {
-        driver.get("https://trello.com/b/vGwHaVh4/test");
+        String cardTitle = "TestMoveCard_" + UUID.randomUUID();
 
-        boardPage = new BoardPage(driver);
+        createCardViaApi(cardTitle);
 
-        boardPage.addCardToFirstList("Test");
+        boardPage.movingCard(cardTitle, "В процессе");
 
-        boardPage.movingCard("Test", "В процессе");
-
-        Assert.assertTrue(boardPage.isCardInList("Test", "В процессе"));
-
-        boardPage.completeCard("Test");
-        boardPage.archiveCard("Test");
+        Assert.assertTrue(boardPage.isCardInList(cardTitle, "В процессе"));
     }
 
     @Test
     public void testCompleteCard() {
-        driver.get("https://trello.com/b/vGwHaVh4/test");
+        String cardTitle = "TestCompleteCard_" + UUID.randomUUID();
 
-        boardPage = new BoardPage(driver);
-
-        boardPage.addCardToFirstList("Test");
-        boardPage.completeCard("Test");
+        createCardViaApi(cardTitle);
+        boardPage.completeCard(cardTitle);
 
         Assert.assertTrue(boardPage.isCompleteButtonSelected());
-
-        boardPage.archiveCard("Test");
     }
 
     @Test
     public void testArchiveCard() {
-        driver.get("https://trello.com/b/vGwHaVh4/test");
+        String cardTitle = "TestArchiveCard_" + UUID.randomUUID();
 
-        boardPage = new BoardPage(driver);
+        createCardViaApi(cardTitle);
+        boardPage.archiveCard(cardTitle);
 
-        boardPage.addCardToFirstList("Test");
-        boardPage.completeCard("Test");
-        boardPage.archiveCard("Test");
+        Assert.assertTrue(boardPage.isCardAbsentFromBoard(cardTitle), "Archived card is still visible on board");
+    }
 
-        Assert.assertTrue(boardPage.isCardArchived("Test"));
+    private void createCardViaApi(String cardTitle) {
+        api.createCard(toDoListId, cardTitle);
+        driver.navigate().refresh();
+        trelloHomePage.dismissBlockingOverlaysIfPresent();
     }
 }
