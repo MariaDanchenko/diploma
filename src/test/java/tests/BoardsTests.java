@@ -101,15 +101,8 @@ public class BoardsTests extends BaseTest {
     public void testDeleteBoard() {
         createBoardViaApiAndOpen();
 
-        try {
-            boardPage.deleteBoard();
-            wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
-        } catch (TimeoutException | NoSuchElementException e) {
-            log.warn("UI delete is unavailable, fallback to API delete for boardId={}", boardId);
-            api.deleteBoard(boardId);
-            driver.get("https://trello.com/boards");
-            wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
-        }
+        boardPage.deleteBoard();
+        wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
 
         Assert.assertTrue(driver.getCurrentUrl().contains("/boards"));
         boardDeletedByTest = true;

@@ -39,20 +39,13 @@ public class BoardPage extends BasePage {
     private final By completeCardButton = By.cssSelector("button[data-testid='card-done-state-completion-button']");
     private final By cardBackButton = By.cssSelector("button[data-testid='card-back-actions-button']");
     private final By archiveCardButton = By.cssSelector("button[data-testid='card-back-archive-button']");
-    private final By menuButton = By.cssSelector(
-            "button[data-testid='board-menu-show-menu-button'], " +
-                    "button[data-testid*='board-menu'], " +
-                    "button[aria-label*='Board menu'], " +
-                    "button[aria-label*='Show menu'], " +
-                    "button[title*='Show menu']"
+    private final By menuButton = By.xpath(
+            "//button[@data-testid='board-menu-show-menu-button' " +
+                    "or contains(@data-testid,'board-menu') " +
+                    "or .//*[@data-testid='OverflowMenuHorizontalIcon']]"
     );
 
-    private final By closeBoardButton = By.cssSelector(
-            "button[data-testid='board-menu-close-board-button'], " +
-                    "button[data-testid='close-board-button'], " +
-                    "button[data-testid='board-menu-item-close-board'], " +
-                    "button[data-testid*='close-board']:not([data-testid*='confirm']):not([data-testid*='delete'])"
-    );
+    private final By closeBoardButton = By.cssSelector("div[data-testid='board-menu-container'] li:last-child button");
     private final By confirmCloseButton = By.cssSelector("button[data-testid='popover-close-board-confirm']");
     private final By deleteBoardButton = By.cssSelector("button[data-testid='close-board-delete-board-button']");
     private final By confirmDeleteButton = By.cssSelector("button[data-testid='close-board-delete-board-confirm-button']");
