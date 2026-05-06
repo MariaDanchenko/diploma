@@ -1,8 +1,8 @@
 package api;
 
 import io.restassured.RestAssured;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 
 public class BaseAPITest {
 
@@ -15,7 +15,7 @@ public class BaseAPITest {
         RestAssured.baseURI = BASE_URL;
     }
 
-    @BeforeClass
+    @BeforeSuite
     public void validateEnv() {
         TrelloApiConfig.validateEnv();
     }

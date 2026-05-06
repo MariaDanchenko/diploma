@@ -2,6 +2,8 @@ package api.client;
 
 import api.TrelloApiConfig;
 import io.restassured.response.Response;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import static io.restassured.RestAssured.given;
 
@@ -139,21 +141,10 @@ public class BoardApiClient {
                 .path("id");
     }
 
+    @Getter
+    @RequiredArgsConstructor
     public static class BoardData {
         private final String id;
         private final String url;
-
-        public BoardData(String id, String url) {
-            this.id = id;
-            this.url = url;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getUrl() {
-            return url;
-        }
     }
 }

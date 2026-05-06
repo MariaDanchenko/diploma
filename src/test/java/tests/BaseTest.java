@@ -26,16 +26,16 @@ public class BaseTest {
     protected LoginPage loginPage;
     protected HomePage homePage;
     protected TrelloHomePage trelloHomePage;
-    private static WebDriver sharedDriver;
-    private static WebDriverWait sharedWait;
-    private static boolean isAuthenticated;
+    private static volatile WebDriver sharedDriver;
+    private static volatile WebDriverWait sharedWait;
+    private static volatile boolean isAuthenticated;
 
     public WebDriver getDriver() {
         return driver;
     }
 
     @BeforeSuite(alwaysRun = true)
-    public void globalSetUp() {
+    public synchronized void globalSetUp() {
         if (sharedDriver == null) {
             WebDriverManager.chromedriver().setup();
             sharedDriver = new ChromeDriver();
@@ -79,11 +79,7 @@ public class BaseTest {
             return;
         }
         try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            shortWait.until(d -> {
-                trelloHomePage.dismissBlockingOverlaysIfPresent();
-                return true;
-            });
+            trelloHomePage.dismissBlockingOverlaysIfPresent();
         } catch (TimeoutException ignored) {
             // Continue test execution even if no overlay appeared.
         }

@@ -1,19 +1,19 @@
 package api;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
+@Slf4j
 public class ParamTests extends BaseAPITest {
 
-    private static final Logger logger = LogManager.getLogger(ParamTests.class);
-    private List<String> boardIDs = new ArrayList<>(); // Список для хранения ID досок
+    private final List<String> boardIds = Collections.synchronizedList(new ArrayList<>());
 
     @DataProvider(name = "boardNames")
     public Object[][] boardNames() {
@@ -26,7 +26,7 @@ public class ParamTests extends BaseAPITest {
 
     @Test(dataProvider = "boardNames")
     public void testCreateBoardsWithParam(String boardName) {
-        String boardID = given().
+        String boardId = given().
                 queryParam("key", API_KEY).
                 queryParam("token", TOKEN).
                 queryParam("name", boardName).
@@ -36,24 +36,24 @@ public class ParamTests extends BaseAPITest {
                 statusCode(200).
                 body("name", equalTo(boardName)).
                 extract().
-                path("id"); // Извлекаем ID созданной доски
+                path("id");
 
-        boardIDs.add(boardID); // Сохраняем ID в список
-        logger.info("Created board with ID: {}", boardID);
+        boardIds.add(boardId);
+        log.info("Created board with ID: {}", boardId);
     }
 
     @AfterMethod(alwaysRun = true)
     public void cleanupBoards() {
-        for (String boardID : new ArrayList<>(boardIDs)) {
+        for (String boardId : new ArrayList<>(boardIds)) {
             given().
                     queryParam("key", API_KEY).
                     queryParam("token", TOKEN).
                     when().
-                    delete("/boards/" + boardID).
+                    delete("/boards/" + boardId).
                     then().
                     statusCode(200);
-            logger.info("Deleted board with ID: {}", boardID);
-            boardIDs.remove(boardID);
+            log.info("Deleted board with ID: {}", boardId);
+            boardIds.remove(boardId);
         }
     }
 }

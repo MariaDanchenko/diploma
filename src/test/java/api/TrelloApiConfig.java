@@ -10,8 +10,11 @@ public final class TrelloApiConfig {
     }
 
     public static void validateEnv() {
-        if (API_KEY == null || TOKEN == null) {
-            throw new IllegalStateException("API_KEY or TOKEN is not set");
+        if (API_KEY == null || API_KEY.isBlank()) {
+            throw new IllegalStateException("TRELLO_API_KEY is not set");
+        }
+        if (TOKEN == null || TOKEN.isBlank()) {
+            throw new IllegalStateException("TRELLO_TOKEN is not set");
         }
     }
 }

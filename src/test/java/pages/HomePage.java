@@ -1,24 +1,18 @@
 package pages;
 
+import config.TestConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 import java.util.ArrayList;
 
-public class HomePage {
-
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+public class HomePage extends BasePage {
     private final By trelloButton = By.cssSelector("a[href*='trello.com/appSwitcherLogin']");
     private final By homeHeader = By.xpath("//h1");
 
     public HomePage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        super(driver, TestConfig.DEFAULT_WAIT);
     }
 
     public String getHeaderText() {

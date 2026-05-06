@@ -1,5 +1,6 @@
 package pages;
 
+import config.TestConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
@@ -8,13 +9,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.List;
 
-public class LoginPage {
-
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+public class LoginPage extends BasePage {
 
     private final By usernameField = By.cssSelector("input[data-testid='username'], input[name='username']");
     private final By continueButton = By.cssSelector("#login-submit, [data-testid='login-submit']");
@@ -28,8 +25,7 @@ public class LoginPage {
     );
 
     public LoginPage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        super(driver, TestConfig.DEFAULT_WAIT);
     }
 
     public void enterUsername(String username) {
@@ -58,17 +54,13 @@ public class LoginPage {
         return new HomePage(driver);
     }
 
-    /**
-     * Только шаг с логином/email на первом экране Atlassian (без пароля).
-     * Нужен, чтобы проверить отклонение невалидных данных без сценария двухшагового входа.
-     */
     public void submitUsernameStep(String usernameOrEmail) {
         enterUsername(usernameOrEmail);
         clickContinueButton();
     }
 
     public boolean isAuthErrorVisible() {
-        WebDriverWait errorWait = new WebDriverWait(driver, Duration.ofSeconds(12));
+        WebDriverWait errorWait = new WebDriverWait(driver, TestConfig.DEFAULT_WAIT.plusSeconds(2));
         try {
             return errorWait.until(driver -> {
                 try {

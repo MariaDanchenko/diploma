@@ -17,7 +17,7 @@ public class ApiUiTests extends BaseTest {
     private final List<String> boardsToCleanup = new ArrayList<>();
 
     @Test
-    public void testCreateBoard() {
+    public void testBoardVisibleAfterApiCreate() {
         String boardName = "API_UI_" + UUID.randomUUID();
 
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
@@ -32,7 +32,21 @@ public class ApiUiTests extends BaseTest {
         wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
 
         Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLink(boardShortLink), "Доска не появилась");
+    }
 
+    @Test
+    public void testBoardGoneAfterApiDelete() {
+        String boardName = "API_UI_" + UUID.randomUUID();
+
+        BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
+        String boardId = boardData.getId();
+        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        boardsToCleanup.add(boardId);
+
+        trelloHomePage.openBoardsPage();
+        driver.navigate().refresh();
+
+        wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
         api.deleteBoard(boardId);
         boardsToCleanup.remove(boardId);
 

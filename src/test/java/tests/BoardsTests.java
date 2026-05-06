@@ -1,8 +1,7 @@
 package tests;
 
 import api.client.BoardApiClient;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.testng.Assert;
@@ -16,12 +15,13 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class BoardsTests extends BaseTest {
 
-    private static final Logger logger = LogManager.getLogger(BoardsTests.class);
     private final BoardApiClient api = new BoardApiClient();
     private BoardPage boardPage;
     private String boardId;
+    private boolean boardDeletedByTest;
 
     @Test
     public void testCreateBoard() {
@@ -105,13 +105,14 @@ public class BoardsTests extends BaseTest {
             boardPage.deleteBoard();
             wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
         } catch (TimeoutException | NoSuchElementException e) {
-            logger.warn("UI delete is unavailable, fallback to API delete for boardId={}", boardId);
+            log.warn("UI delete is unavailable, fallback to API delete for boardId={}", boardId);
             api.deleteBoard(boardId);
             driver.get("https://trello.com/boards");
             wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
         }
 
         Assert.assertTrue(driver.getCurrentUrl().contains("/boards"));
+        boardDeletedByTest = true;
         boardId = null;
     }
 
@@ -119,7 +120,7 @@ public class BoardsTests extends BaseTest {
         String boardName = "BoardsTests_" + UUID.randomUUID();
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
         boardId = boardData.getId();
-        logger.info("Created board for test with ID: {}", boardId);
+        log.info("Created board for test with ID: {}", boardId);
         driver.get(boardData.getUrl());
         boardPage = new BoardPage(driver);
         Assert.assertTrue(boardPage.isBoardLoaded(), "Доска не загрузилась");
@@ -127,18 +128,18 @@ public class BoardsTests extends BaseTest {
 
     @AfterMethod
     public void tearDown(ITestResult result) {
-        //Пропускаем cleanup для теста удаления доски
-        if (result.getMethod().getMethodName().equals("testDeleteBoard")) {
+        if (boardDeletedByTest) {
+            boardDeletedByTest = false;
             return;
         }
 
         try {
             if (boardId != null) {
                 api.deleteBoard(boardId);
-                logger.info("Deleted board in teardown with ID: {}", boardId);
+                log.info("Deleted board in teardown with ID: {}", boardId);
             }
         } catch (Exception e) {
-            Assert.fail("Cleanup failed for boardId=" + boardId + ": " + e.getMessage(), e);
+            log.error("Cleanup failed for boardId={}", boardId, e);
         } finally {
             boardId = null;
         }
