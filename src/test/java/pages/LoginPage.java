@@ -29,11 +29,13 @@ public class LoginPage extends BasePage {
     }
 
     public void enterUsername(String username) {
+        requireNonBlank(username, "username");
         WebElement usernameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(usernameField));
         usernameInput.sendKeys(username);
     }
 
     public void enterPassword(String password) {
+        requireNonBlank(password, "password");
         WebElement passwordInput = wait.until(ExpectedConditions.visibilityOfElementLocated(passwordField));
         passwordInput.sendKeys(password);
     }
@@ -43,7 +45,9 @@ public class LoginPage extends BasePage {
         continueBtn.click();
     }
 
-    public HomePage login(String username, String password) {
+    public void login(String username, String password) {
+        requireNonBlank(username, "username");
+        requireNonBlank(password, "password");
         enterUsername(username);
         clickContinueButton();
 
@@ -51,10 +55,10 @@ public class LoginPage extends BasePage {
 
         enterPassword(password);
         clickContinueButton();
-        return new HomePage(driver);
     }
 
     public void submitUsernameStep(String usernameOrEmail) {
+        requireNonBlank(usernameOrEmail, "usernameOrEmail");
         enterUsername(usernameOrEmail);
         clickContinueButton();
     }

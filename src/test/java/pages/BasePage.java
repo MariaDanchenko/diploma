@@ -12,9 +12,12 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 
 public abstract class BasePage {
 
@@ -28,6 +31,29 @@ public abstract class BasePage {
 
     protected BasePage(WebDriver driver) {
         this(driver, TestConfig.DEFAULT_WAIT);
+    }
+
+    protected static String asXpathLiteral(String value) {
+        if (!value.contains("'")) {
+            return "'" + value + "'";
+        }
+        String[] parts = value.split("'");
+        StringBuilder xpathBuilder = new StringBuilder("concat(");
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                xpathBuilder.append(", \"'\", ");
+            }
+            xpathBuilder.append("'").append(parts[i]).append("'");
+        }
+        xpathBuilder.append(")");
+        return xpathBuilder.toString();
+    }
+
+    protected static void requireNonBlank(String value, String paramName) {
+        Objects.requireNonNull(value, paramName + " must not be null");
+        if (value.isBlank()) {
+            throw new IllegalArgumentException(paramName + " must not be blank");
+        }
     }
 
     protected void safeClick(By locator) {
@@ -76,37 +102,38 @@ public abstract class BasePage {
     public void dismissOverlays() {
         By dismissSelector = By.cssSelector("div[data-testid='spotlight--dialog-footer'] button:last-of-type");
 
-        long deadline = System.currentTimeMillis() + 8000;
-        int idleRounds = 0;
-        while (System.currentTimeMillis() < deadline && idleRounds < 2) {
-            boolean dismissedAny = false;
-            try {
-                new Actions(driver).pause(Duration.ofMillis(100)).sendKeys(Keys.ESCAPE).perform();
-            } catch (WebDriverException ignored) {
-            }
+        FluentWait<WebDriver> overlayWait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofMillis(TestConfig.OVERLAY_DISMISS_TIMEOUT_MS))
+                .pollingEvery(Duration.ofMillis(TestConfig.OVERLAY_POLL_INTERVAL_MS))
+                .ignoring(StaleElementReferenceException.class, WebDriverException.class);
 
-            try {
-                for (WebElement element : driver.findElements(dismissSelector)) {
-                    if (!element.isDisplayed()) {
-                        continue;
-                    }
-                    safeClick(element);
-                    dismissedAny = true;
-                }
-            } catch (StaleElementReferenceException ignored) {
-            }
-
-            if (dismissedAny) {
-                idleRounds = 0;
-            } else {
-                idleRounds++;
+        try {
+            overlayWait.until(d -> {
                 try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
+                    new Actions(d).sendKeys(Keys.ESCAPE).perform();
+                } catch (WebDriverException ignored) {
                 }
-            }
+
+                List<WebElement> overlays = d.findElements(dismissSelector);
+                boolean anyVisible = false;
+                for (WebElement element : overlays) {
+                    try {
+                        if (!element.isDisplayed()) {
+                            continue;
+                        }
+                        anyVisible = true;
+                        try {
+                            element.click();
+                        } catch (ElementClickInterceptedException | StaleElementReferenceException e) {
+                            ((JavascriptExecutor) d).executeScript("arguments[0].click();", element);
+                        }
+                    } catch (StaleElementReferenceException ignored) {
+                    }
+                }
+                return !anyVisible;
+            });
+        } catch (TimeoutException ignored) {
+            // Best-effort overlay dismissal
         }
     }
 }

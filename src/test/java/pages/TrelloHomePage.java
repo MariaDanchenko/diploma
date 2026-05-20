@@ -104,11 +104,13 @@ public class TrelloHomePage extends BasePage {
     }
 
     public void search(String text) {
+        requireNonBlank(text, "text");
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(advancedSearchInput));
         input.sendKeys(text);
     }
 
     public boolean isSearchResultRelevant(String expectedText) {
+        requireNonBlank(expectedText, "expectedText");
         final List<WebElement> results;
         try {
             results = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(searchResults));
@@ -170,32 +172,21 @@ public class TrelloHomePage extends BasePage {
     }
 
     public boolean isBoardVisible(String boardName) {
+        requireNonBlank(boardName, "boardName");
         return !driver.findElements(By.xpath("//span[text()=" + asXpathLiteral(boardName) + "]")).isEmpty();
     }
 
     public boolean isBoardVisibleByShortLink(String shortLink) {
+        requireNonBlank(shortLink, "shortLink");
         return !driver.findElements(By.cssSelector("a[href*='/b/" + shortLink + "']")).isEmpty();
     }
 
     public boolean isBoardVisibleByShortLinkAndName(String shortLink, String boardName) {
+        requireNonBlank(shortLink, "shortLink");
+        requireNonBlank(boardName, "boardName");
         return !driver.findElements(By.xpath(
                 "//a[contains(@href,'/b/" + shortLink + "') and .//span[text()=" + asXpathLiteral(boardName) + "]]"
         )).isEmpty();
     }
 
-    private String asXpathLiteral(String value) {
-        if (!value.contains("'")) {
-            return "'" + value + "'";
-        }
-        String[] parts = value.split("'");
-        StringBuilder xpathBuilder = new StringBuilder("concat(");
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                xpathBuilder.append(", \"'\", ");
-            }
-            xpathBuilder.append("'").append(parts[i]).append("'");
-        }
-        xpathBuilder.append(")");
-        return xpathBuilder.toString();
-    }
 }

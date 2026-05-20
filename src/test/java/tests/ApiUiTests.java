@@ -31,7 +31,8 @@ public class ApiUiTests extends BaseTest {
 
         wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
 
-        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLink(boardShortLink), "Доска не появилась");
+        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLink(boardShortLink),
+                "Board is not visible on the boards page after API creation");
     }
 
     @Test
@@ -54,7 +55,8 @@ public class ApiUiTests extends BaseTest {
 
         wait.until(driver1 -> !trelloHomePage.isBoardVisibleByShortLink(boardShortLink));
 
-        Assert.assertFalse(trelloHomePage.isBoardVisibleByShortLink(boardShortLink), "Доска не удалилась");
+        Assert.assertFalse(trelloHomePage.isBoardVisibleByShortLink(boardShortLink),
+                "Board is still visible after API deletion");
     }
 
     @Test
@@ -71,7 +73,8 @@ public class ApiUiTests extends BaseTest {
         driver.navigate().refresh();
 
         wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, initialName));
-        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, initialName));
+        Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, initialName),
+                "Board with initial name is not visible");
 
         api.updateBoard(boardId, updatedName);
 
@@ -79,7 +82,7 @@ public class ApiUiTests extends BaseTest {
 
         wait.until(driver1 -> trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, updatedName));
         Assert.assertTrue(trelloHomePage.isBoardVisibleByShortLinkAndName(boardShortLink, updatedName),
-                "Имя не обновилось");
+                "Board name was not updated on the UI");
 
         api.deleteBoard(boardId);
         boardsToCleanup.remove(boardId);

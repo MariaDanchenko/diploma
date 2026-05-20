@@ -78,7 +78,20 @@ public class BoardPage extends BasePage {
         return firstVisible(driver.findElements(textAreaList)) != null;
     }
 
+    private static By cardByExactText(String title) {
+        return By.xpath("//a[@data-testid='card-name' and text()=" + asXpathLiteral(title) + "]");
+    }
+
+    private static By cardByNormalizedText(String title) {
+        return By.xpath("//a[@data-testid='card-name' and normalize-space(.)=" + asXpathLiteral(title) + "]");
+    }
+
+    private static By listByName(String listName) {
+        return By.xpath("//div[@data-testid='list']//h2[normalize-space()=" + asXpathLiteral(listName) + "]");
+    }
+
     public void addList(String listName) {
+        requireNonBlank(listName, "listName");
         dismissOverlays();
 
         ((JavascriptExecutor) driver).executeScript(
@@ -117,6 +130,7 @@ public class BoardPage extends BasePage {
     }
 
     public void addCardToFirstList(String title) {
+        requireNonBlank(title, "title");
         for (int attempt = 0; attempt < 3; attempt++) {
             try {
                 safeClick(addCardButton);
@@ -135,9 +149,7 @@ public class BoardPage extends BasePage {
 
                 safeClick(addCard);
 
-                wait.until(ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
-                ));
+                wait.until(ExpectedConditions.visibilityOfElementLocated(cardByExactText(title)));
                 return;
             } catch (StaleElementReferenceException | TimeoutException e) {
                 if (attempt == 2) {
@@ -149,15 +161,14 @@ public class BoardPage extends BasePage {
     }
 
     public boolean isCardExists(String title) {
-        return !driver.findElements(
-                By.xpath("//a[@data-testid='card-name' and text()='" + title + "']")
-        ).isEmpty();
+        requireNonBlank(title, "title");
+        return !driver.findElements(cardByExactText(title)).isEmpty();
     }
 
     public void editCard(String oldTitle, String newTitle) {
-        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//a[@data-testid='card-name' and normalize-space(.)='" + oldTitle + "']")
-        ));
+        requireNonBlank(oldTitle, "oldTitle");
+        requireNonBlank(newTitle, "newTitle");
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(cardByNormalizedText(oldTitle)));
 
         Actions actions = new Actions(driver);
         actions.moveToElement(card).perform();
@@ -185,9 +196,9 @@ public class BoardPage extends BasePage {
     }
 
     public void movingCard(String title, String targetListName) {
-        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//a[@data-testid='card-name' and normalize-space(.)='" + title + "']")
-        ));
+        requireNonBlank(title, "title");
+        requireNonBlank(targetListName, "targetListName");
+        WebElement card = wait.until(ExpectedConditions.elementToBeClickable(cardByNormalizedText(title)));
 
         Actions actions = new Actions(driver);
         actions.moveToElement(card).perform();
@@ -213,6 +224,8 @@ public class BoardPage extends BasePage {
     }
 
     public boolean isCardInList(String cardTitle, String listName) {
+        requireNonBlank(cardTitle, "cardTitle");
+        requireNonBlank(listName, "listName");
         List<WebElement> allLists = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(lists));
 
         for (WebElement currentList : allLists) {
@@ -232,7 +245,8 @@ public class BoardPage extends BasePage {
     }
 
     public boolean isListExists(String listName) {
-        By listTitle = By.xpath("//div[@data-testid='list']//h2[normalize-space()='" + listName + "']");
+        requireNonBlank(listName, "listName");
+        By listTitle = listByName(listName);
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(listTitle));
             return true;
@@ -242,7 +256,8 @@ public class BoardPage extends BasePage {
     }
 
     public void completeCard(String cardTitle) {
-        By cardByTitle = By.xpath("//a[@data-testid='card-name' and normalize-space(.)='" + cardTitle + "']");
+        requireNonBlank(cardTitle, "cardTitle");
+        By cardByTitle = cardByNormalizedText(cardTitle);
         dismissOverlays();
         WebElement card = wait.until(ExpectedConditions.elementToBeClickable(cardByTitle));
 
@@ -288,7 +303,8 @@ public class BoardPage extends BasePage {
     }
 
     public void archiveCard(String cardTitle) {
-        By cardByTitle = By.xpath("//a[@data-testid='card-name' and normalize-space(.)='" + cardTitle + "']");
+        requireNonBlank(cardTitle, "cardTitle");
+        By cardByTitle = cardByNormalizedText(cardTitle);
 
         dismissOverlays();
         safeClick(cardByTitle);
@@ -298,10 +314,8 @@ public class BoardPage extends BasePage {
     }
 
     public boolean isCardAbsentFromBoard(String cardTitle) {
-
-        List<WebElement> cards = driver.findElements(
-                By.xpath("//a[@data-testid='card-name' and normalize-space(.)='" + cardTitle + "']")
-        );
+        requireNonBlank(cardTitle, "cardTitle");
+        List<WebElement> cards = driver.findElements(cardByNormalizedText(cardTitle));
 
         return cards.isEmpty();
     }

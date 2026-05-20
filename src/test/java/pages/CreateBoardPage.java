@@ -16,6 +16,7 @@ public class CreateBoardPage extends BasePage {
     }
 
     public void inputTitle(String text) {
+        requireNonBlank(text, "text");
         WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(boardTitle));
         titleInput.sendKeys(text);
     }

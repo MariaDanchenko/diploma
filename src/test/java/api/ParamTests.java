@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Slf4j
 public class ParamTests extends BaseAPITest {
 
-    private final List<String> boardIds = Collections.synchronizedList(new ArrayList<>());
+    private final List<String> boardIds = new CopyOnWriteArrayList<>();
 
     @DataProvider(name = "boardNames")
     public Object[][] boardNames() {

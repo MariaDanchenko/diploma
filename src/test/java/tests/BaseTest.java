@@ -1,5 +1,6 @@
 package tests;
 
+import api.TrelloApiConfig;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import listener.Listener;
 import org.openqa.selenium.WebDriver;
@@ -12,7 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
-import pages.HomePage;
 import pages.LoginPage;
 import pages.TrelloHomePage;
 
@@ -24,7 +24,6 @@ public class BaseTest {
     protected WebDriver driver;
     protected WebDriverWait wait;
     protected LoginPage loginPage;
-    protected HomePage homePage;
     protected TrelloHomePage trelloHomePage;
     private static volatile WebDriver sharedDriver;
     private static volatile WebDriverWait sharedWait;
@@ -36,6 +35,8 @@ public class BaseTest {
 
     @BeforeSuite(alwaysRun = true)
     public synchronized void globalSetUp() {
+        TrelloApiConfig.validateUiCredentials();
+
         if (sharedDriver == null) {
             WebDriverManager.chromedriver().setup();
             sharedDriver = new ChromeDriver();
@@ -43,23 +44,17 @@ public class BaseTest {
         }
 
         if (!isAuthenticated) {
-            sharedDriver.get("https://id.atlassian.com/login?application=trello");
+            sharedDriver.get("https://id.atlassian.com/login?application=trello&continue=https%3A%2F%2Ftrello.com%2Fauth%2Fatlassian%2Fcallback%3FreturnUrl%3D%252Fu%252Fuser51818084%252Fboards%26display%3D%26aaOnboarding%3D%26updateEmail%3D%26traceId%3D%26ssoVerified%3D%26createMember%3D%26jiraInviteLink%3D");
 
             LoginPage suiteLoginPage = new LoginPage(sharedDriver);
             String email = System.getenv("TRELLO_EMAIL");
             String password = System.getenv("TRELLO_PASSWORD");
             suiteLoginPage.login(email, password);
 
-            sharedWait.until(driver -> {
-                String url = driver.getCurrentUrl();
-                return url.contains("home") || url.contains("trello.com");
-            });
-
-            HomePage suiteHomePage = new HomePage(sharedDriver);
-            suiteHomePage.clickTrelloButton();
-
-            sharedWait.until(ExpectedConditions.urlContains("trello.com/"));
-            new TrelloHomePage(sharedDriver).dismissBlockingOverlaysIfPresent();
+            TrelloHomePage suiteTrelloHomePage = new TrelloHomePage(sharedDriver);
+            sharedWait.until(ExpectedConditions.urlContains("trello.com"));
+            sharedWait.until(driver -> suiteTrelloHomePage.isOnHomePage());
+            suiteTrelloHomePage.dismissBlockingOverlaysIfPresent();
             isAuthenticated = true;
         }
     }
@@ -69,7 +64,6 @@ public class BaseTest {
         driver = sharedDriver;
         wait = sharedWait;
         loginPage = new LoginPage(driver);
-        homePage = new HomePage(driver);
         trelloHomePage = new TrelloHomePage(driver);
     }
 

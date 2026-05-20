@@ -39,8 +39,8 @@ public class BoardsTests extends BaseTest {
         String shortLink = extractBoardShortLink();
         boardId = api.getBoardIdByShortLink(shortLink);
 
-        Assert.assertTrue(boardPage.isBoardLoaded());
-        Assert.assertEquals(boardPage.getBoardHeader(), boardName);
+        Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load after creation");
+        Assert.assertEquals(boardPage.getBoardHeader(), boardName, "Board header does not match expected name");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class BoardsTests extends BaseTest {
         boardPage.addCardToFirstList(cardTitle);
 
         wait.until(driver1 -> boardPage.isCardExists(cardTitle));
-        Assert.assertTrue(boardPage.isCardExists(cardTitle));
+        Assert.assertTrue(boardPage.isCardExists(cardTitle), "Card is not visible on the board");
     }
 
     @Test
@@ -84,7 +84,7 @@ public class BoardsTests extends BaseTest {
         boardPage.editCard(oldCardTitle, updatedCardTitle);
 
         wait.until(driver1 -> boardPage.isCardExists(updatedCardTitle));
-        Assert.assertTrue(boardPage.isCardExists(updatedCardTitle));
+        Assert.assertTrue(boardPage.isCardExists(updatedCardTitle), "Updated card is not visible on the board");
     }
 
     private String extractBoardShortLink() {
@@ -104,7 +104,7 @@ public class BoardsTests extends BaseTest {
         boardPage.deleteBoard();
         wait.until(driver1 -> driver1.getCurrentUrl().contains("/boards"));
 
-        Assert.assertTrue(driver.getCurrentUrl().contains("/boards"));
+        Assert.assertTrue(driver.getCurrentUrl().contains("/boards"), "Expected boards page URL after deletion");
         boardDeletedByTest = true;
         boardId = null;
     }
@@ -116,7 +116,7 @@ public class BoardsTests extends BaseTest {
         log.info("Created board for test with ID: {}", boardId);
         driver.get(boardData.getUrl());
         boardPage = new BoardPage(driver);
-        Assert.assertTrue(boardPage.isBoardLoaded(), "Доска не загрузилась");
+        Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
     }
 
     @AfterMethod

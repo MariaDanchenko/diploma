@@ -27,7 +27,7 @@ public class CardsTests extends BaseTest {
 
         driver.get(boardData.getUrl());
         boardPage = new BoardPage(driver);
-        Assert.assertTrue(boardPage.isBoardLoaded(), "Доска не загрузилась");
+        Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
         trelloHomePage.dismissBlockingOverlaysIfPresent();
     }
 
@@ -46,7 +46,7 @@ public class CardsTests extends BaseTest {
 
         boardPage.movingCard(cardTitle, "В процессе");
 
-        Assert.assertTrue(boardPage.isCardInList(cardTitle, "В процессе"));
+        Assert.assertTrue(boardPage.isCardInList(cardTitle, "В процессе"), "Card was not moved to the target list");
     }
 
     @Test
@@ -56,7 +56,7 @@ public class CardsTests extends BaseTest {
         createCardViaApi(cardTitle);
         boardPage.completeCard(cardTitle);
 
-        Assert.assertTrue(boardPage.isCompleteButtonSelected());
+        Assert.assertTrue(boardPage.isCompleteButtonSelected(), "Complete button is not in selected state");
     }
 
     @Test
