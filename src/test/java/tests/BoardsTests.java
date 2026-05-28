@@ -2,8 +2,6 @@ package tests;
 
 import api.client.BoardApiClient;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.TimeoutException;
 import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
@@ -112,9 +110,9 @@ public class BoardsTests extends BaseTest {
     private void createBoardViaApiAndOpen() {
         String boardName = "BoardsTests_" + UUID.randomUUID();
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
-        boardId = boardData.getId();
+        boardId = boardData.id();
         log.info("Created board for test with ID: {}", boardId);
-        driver.get(boardData.getUrl());
+        driver.get(boardData.url());
         boardPage = new BoardPage(driver);
         Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
     }

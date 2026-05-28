@@ -64,7 +64,7 @@ public class LoginPage extends BasePage {
     }
 
     public boolean isAuthErrorVisible() {
-        WebDriverWait errorWait = new WebDriverWait(driver, TestConfig.DEFAULT_WAIT.plusSeconds(2));
+        WebDriverWait errorWait = new WebDriverWait(driver, TestConfig.AUTH_ERROR_WAIT);
         try {
             return errorWait.until(driver -> {
                 try {

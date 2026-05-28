@@ -20,12 +20,12 @@ public class CardsTests extends BaseTest {
     public void prepareBoard() {
         String boardName = "CardsTests_" + UUID.randomUUID();
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
-        boardId = boardData.getId();
+        boardId = boardData.id();
 
         toDoListId = api.createList(boardId, "To Do");
         api.createList(boardId, "В процессе");
 
-        driver.get(boardData.getUrl());
+        driver.get(boardData.url());
         boardPage = new BoardPage(driver);
         Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
         trelloHomePage.dismissBlockingOverlaysIfPresent();

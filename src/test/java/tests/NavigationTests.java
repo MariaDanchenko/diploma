@@ -1,10 +1,17 @@
 package tests;
 
+import api.client.BoardApiClient;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.UUID;
+
 public class NavigationTests extends BaseTest {
+
+    private static final String SEARCH_TERM = "Моя";
+
+    private final BoardApiClient api = new BoardApiClient();
 
     @BeforeMethod
     public void resetState() {
@@ -61,10 +68,17 @@ public class NavigationTests extends BaseTest {
 
     @Test
     public void testSearch() {
-        trelloHomePage.openSearchPage();
-        trelloHomePage.search("Моя");
+        String boardName = SEARCH_TERM + " доска " + UUID.randomUUID();
+        String boardId = api.createBoard(boardName);
+        try {
+            trelloHomePage.openSearchPage();
+            trelloHomePage.search(SEARCH_TERM);
 
-        Assert.assertTrue(trelloHomePage.isSearchResultRelevant("Моя"), "Search results do not contain expected text");
+            Assert.assertTrue(trelloHomePage.isSearchResultRelevant(SEARCH_TERM),
+                    "Search results do not contain expected text");
+        } finally {
+            api.deleteBoard(boardId);
+        }
     }
 
     @Test

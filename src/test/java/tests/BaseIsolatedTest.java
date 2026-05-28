@@ -1,6 +1,5 @@
 package tests;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import listener.Listener;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -19,7 +18,6 @@ public abstract class BaseIsolatedTest {
 
     @BeforeMethod(alwaysRun = true)
     public void setUpIsolatedDriver() {
-        WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
     }
 

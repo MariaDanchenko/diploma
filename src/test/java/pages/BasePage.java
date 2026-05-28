@@ -76,26 +76,16 @@ public abstract class BasePage {
         }
     }
 
+    /**
+     * Clicks a pre-located element. Does not recover from {@link StaleElementReferenceException};
+     * prefer {@link #safeClick(By)} when the element may go stale.
+     */
     protected void safeClick(WebElement element) {
-        for (int attempt = 0; attempt < 3; attempt++) {
-            try {
-                wait.until(ExpectedConditions.elementToBeClickable(element)).click();
-                return;
-            } catch (ElementClickInterceptedException e) {
-                dismissOverlays();
-                try {
-                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-                    return;
-                } catch (StaleElementReferenceException ignored) {
-                    if (attempt == 2) {
-                        throw ignored;
-                    }
-                }
-            } catch (StaleElementReferenceException e) {
-                if (attempt == 2) {
-                    throw e;
-                }
-            }
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(element)).click();
+        } catch (ElementClickInterceptedException e) {
+            dismissOverlays();
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
         }
     }
 

@@ -19,9 +19,7 @@ public class CrudTests extends BaseAPITest {
     public void testCreateBoard() {
         String boardName = "Test Board " + UUID.randomUUID();
 
-        Response response = given().
-                queryParam("key", API_KEY).
-                queryParam("token", TOKEN).
+        Response response = given(defaultApiSpec()).
                 queryParam("name", boardName).
                 when().
                 post("/boards/").
@@ -39,9 +37,7 @@ public class CrudTests extends BaseAPITest {
     public void testGetBoard() {
         String boardId = api.createBoard("Get Board " + UUID.randomUUID());
         try {
-            given().
-                    queryParam("key", API_KEY).
-                    queryParam("token", TOKEN).
+            given(defaultApiSpec()).
                     when().
                     get("/boards/" + boardId).
                     then().
@@ -56,12 +52,10 @@ public class CrudTests extends BaseAPITest {
 
     @Test
     public void testUpdateBoard() {
-        String newName = "Updated Board Name";
+        String newName = "Updated Board Name " + UUID.randomUUID();
         String boardId = api.createBoard("Update Board " + UUID.randomUUID());
         try {
-            given().
-                    queryParam("key", API_KEY).
-                    queryParam("token", TOKEN).
+            given(defaultApiSpec()).
                     queryParam("name", newName).
                     when().
                     put("/boards/" + boardId).
@@ -80,9 +74,7 @@ public class CrudTests extends BaseAPITest {
         String boardId = api.createBoard("Delete Board " + UUID.randomUUID());
         api.deleteBoard(boardId);
 
-        given().
-                queryParam("key", API_KEY).
-                queryParam("token", TOKEN).
+        given(defaultApiSpec()).
                 when().
                 get("/boards/" + boardId).
                 then().

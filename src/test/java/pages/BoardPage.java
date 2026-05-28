@@ -12,13 +12,7 @@ public class BoardPage extends BasePage {
     private final By boardHeader = By.cssSelector("h1[data-testid='board-name-display']");
     private final By lists = By.cssSelector("div[data-testid='list']");
     private final By cards = By.cssSelector("a[data-testid='card-name']");
-    private final By textAreaList = By.cssSelector(
-            "textarea[data-testid='list-name-textarea'], input[data-testid='list-name-textarea'], " +
-                    "textarea[data-testid='list-composer-editor-input'], " +
-                    "form[data-testid='list-composer'] textarea, form[data-testid='list-composer'] input, " +
-                    "textarea[name='listName'], input[name='listName'], " +
-                    "textarea[placeholder*='list title'], input[placeholder*='list title']"
-    );
+    private final By textAreaList = By.cssSelector("textarea[data-testid='list-name-textarea']");
     private final By addListConfirmButton = By.cssSelector(
             "button[data-testid='list-composer-add-list-button'], " +
                     "button[data-testid*='list-composer-add-list']"
@@ -45,7 +39,7 @@ public class BoardPage extends BasePage {
                     "or .//*[@data-testid='OverflowMenuHorizontalIcon']]"
     );
 
-    private final By closeBoardButton = By.cssSelector("div[data-testid='board-menu-container'] li:last-child button");
+    private final By closeBoardButton = By.cssSelector("div[data-testid='board-menu-container'] li:nth-child(23)");
     private final By confirmCloseButton = By.cssSelector("button[data-testid='popover-close-board-confirm']");
     private final By deleteBoardButton = By.cssSelector("button[data-testid='close-board-delete-board-button']");
     private final By confirmDeleteButton = By.cssSelector("button[data-testid='close-board-delete-board-confirm-button']");

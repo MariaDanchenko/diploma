@@ -1,25 +1,25 @@
 package api.client;
 
 import api.TrelloApiConfig;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
 
 public class BoardApiClient {
 
-    private final String API_KEY = TrelloApiConfig.API_KEY;
-    private final String TOKEN = TrelloApiConfig.TOKEN;
+    private final RequestSpecification spec = new RequestSpecBuilder()
+            .setBaseUri(TrelloApiConfig.BASE_URL)
+            .addQueryParam("key", TrelloApiConfig.API_KEY)
+            .addQueryParam("token", TrelloApiConfig.TOKEN)
+            .build();
 
     public String createBoard(String name) {
-
-        return given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        return given(spec)
                 .queryParam("name", name)
                 .when()
-                .post("https://api.trello.com/1/boards/")
+                .post("/boards/")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -27,12 +27,10 @@ public class BoardApiClient {
     }
 
     public BoardData createBoardWithUrl(String name) {
-        Response response = given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        Response response = given(spec)
                 .queryParam("name", name)
                 .when()
-                .post("https://api.trello.com/1/boards/")
+                .post("/boards/")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -45,34 +43,28 @@ public class BoardApiClient {
     }
 
     public void deleteBoard(String boardId) {
-        given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        given(spec)
                 .when()
-                .delete("https://api.trello.com/1/boards/" + boardId)
+                .delete("/boards/" + boardId)
                 .then()
                 .statusCode(200);
     }
 
     public void updateBoard(String boardId, String newName) {
-        given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        given(spec)
                 .queryParam("name", newName)
                 .when()
-                .put("https://api.trello.com/1/boards/" + boardId)
+                .put("/boards/" + boardId)
                 .then()
                 .statusCode(200);
     }
 
     public String createList(String boardId, String listName) {
-        return given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        return given(spec)
                 .queryParam("name", listName)
                 .queryParam("idBoard", boardId)
                 .when()
-                .post("https://api.trello.com/1/lists")
+                .post("/lists")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -80,71 +72,27 @@ public class BoardApiClient {
     }
 
     public String createCard(String listId, String cardName) {
-        return given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        return given(spec)
                 .queryParam("name", cardName)
                 .queryParam("idList", listId)
                 .when()
-                .post("https://api.trello.com/1/cards")
+                .post("/cards")
                 .then()
                 .statusCode(200)
                 .extract()
                 .path("id");
-    }
-
-    public void archiveCard(String cardId) {
-        given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
-                .queryParam("closed", true)
-                .when()
-                .put("https://api.trello.com/1/cards/" + cardId)
-                .then()
-                .statusCode(200);
-    }
-
-    public boolean isCardArchived(String cardId) {
-        Boolean isClosed = given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
-                .when()
-                .get("https://api.trello.com/1/cards/" + cardId)
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("closed");
-        return Boolean.TRUE.equals(isClosed);
-    }
-
-    public String getFirstListIdByBoardShortLink(String boardShortLink) {
-        return given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
-                .when()
-                .get("https://api.trello.com/1/boards/" + boardShortLink + "/lists")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("[0].id");
     }
 
     public String getBoardIdByShortLink(String boardShortLink) {
-        return given()
-                .queryParam("key", API_KEY)
-                .queryParam("token", TOKEN)
+        return given(spec)
                 .when()
-                .get("https://api.trello.com/1/boards/" + boardShortLink)
+                .get("/boards/" + boardShortLink)
                 .then()
                 .statusCode(200)
                 .extract()
                 .path("id");
     }
 
-    @Getter
-    @RequiredArgsConstructor
-    public static class BoardData {
-        private final String id;
-        private final String url;
+    public record BoardData(String id, String url) {
     }
 }

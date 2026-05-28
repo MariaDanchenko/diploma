@@ -21,8 +21,8 @@ public class ApiUiTests extends BaseTest {
         String boardName = "API_UI_" + UUID.randomUUID();
 
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
-        String boardId = boardData.getId();
-        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        String boardId = boardData.id();
+        String boardShortLink = extractBoardShortLink(boardData.url());
         boardsToCleanup.add(boardId);
 
         trelloHomePage.openBoardsPage();
@@ -40,8 +40,8 @@ public class ApiUiTests extends BaseTest {
         String boardName = "API_UI_" + UUID.randomUUID();
 
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(boardName);
-        String boardId = boardData.getId();
-        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        String boardId = boardData.id();
+        String boardShortLink = extractBoardShortLink(boardData.url());
         boardsToCleanup.add(boardId);
 
         trelloHomePage.openBoardsPage();
@@ -65,8 +65,8 @@ public class ApiUiTests extends BaseTest {
         String updatedName = "Updated_Name_" + UUID.randomUUID();
 
         BoardApiClient.BoardData boardData = api.createBoardWithUrl(initialName);
-        String boardId = boardData.getId();
-        String boardShortLink = extractBoardShortLink(boardData.getUrl());
+        String boardId = boardData.id();
+        String boardShortLink = extractBoardShortLink(boardData.url());
         boardsToCleanup.add(boardId);
 
         trelloHomePage.openBoardsPage();

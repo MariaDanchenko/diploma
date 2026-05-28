@@ -22,16 +22,16 @@ public class Listener implements ITestListener {
     public void onTestFailure(ITestResult result) {
         Object testClass = result.getInstance();
         WebDriver driver;
-        if (testClass instanceof BaseTest) {
-            driver = ((BaseTest) testClass).getDriver();
-        } else if (testClass instanceof BaseIsolatedTest) {
-            driver = ((BaseIsolatedTest) testClass).getDriver();
+        if (testClass instanceof BaseTest bt) {
+            driver = bt.getDriver();
+        } else if (testClass instanceof BaseIsolatedTest bit) {
+            driver = bit.getDriver();
         } else {
             log.warn("Skipping screenshot capture: {} is not supported base class", result.getTestClass().getName());
             return;
         }
 
-        if (driver == null || !(driver instanceof TakesScreenshot)) {
+        if (driver == null) {
             log.warn("Skipping screenshot capture: driver unavailable for {}", result.getName());
             return;
         }

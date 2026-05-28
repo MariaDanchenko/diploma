@@ -26,9 +26,7 @@ public class ParamTests extends BaseAPITest {
 
     @Test(dataProvider = "boardNames")
     public void testCreateBoardsWithParam(String boardName) {
-        String boardId = given().
-                queryParam("key", API_KEY).
-                queryParam("token", TOKEN).
+        String boardId = given(defaultApiSpec()).
                 queryParam("name", boardName).
                 when().
                 post("/boards/").
@@ -45,9 +43,7 @@ public class ParamTests extends BaseAPITest {
     @AfterMethod(alwaysRun = true)
     public void cleanupBoards() {
         for (String boardId : new ArrayList<>(boardIds)) {
-            given().
-                    queryParam("key", API_KEY).
-                    queryParam("token", TOKEN).
+            given(defaultApiSpec()).
                     when().
                     delete("/boards/" + boardId).
                     then().
