@@ -18,8 +18,7 @@ public class BoardPage extends BasePage {
                     "button[data-testid*='list-composer-add-list']"
     );
 
-    private final By addCardButton = By.cssSelector("button[data-testid='list-add-card-button']");
-    private final By inputText = By.cssSelector("textarea[data-testid='list-card-composer-textarea']");
+    private final By inputText = By.cssSelector("div[data-testid='list-card-composer-textarea']");
     private final By addCard = By.cssSelector("button[data-testid='list-card-composer-add-card-button']");
 
     private final By editButton = By.cssSelector("button[data-testid='quick-card-editor-button']");
@@ -39,8 +38,11 @@ public class BoardPage extends BasePage {
                     "or .//*[@data-testid='OverflowMenuHorizontalIcon']]"
     );
 
-    private final By closeBoardButton = By.cssSelector("div[data-testid='board-menu-container'] li:nth-child(23)");
-    private final By confirmCloseButton = By.cssSelector("button[data-testid='popover-close-board-confirm']");
+    private final By closeBoardButton = By.cssSelector(
+            "div[data-testid='board-menu-container'] li:nth-last-child(3)");
+    private final By confirmCloseButton = By.xpath(
+            "//button[@data-testid='popover-close-board-confirm']"
+    );
     private final By deleteBoardButton = By.cssSelector("button[data-testid='close-board-delete-board-button']");
     private final By confirmDeleteButton = By.cssSelector("button[data-testid='close-board-delete-board-confirm-button']");
 
@@ -121,35 +123,62 @@ public class BoardPage extends BasePage {
         } catch (ElementNotInteractableException ignored) {
         }
         safeClick(addListConfirmButton);
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(textAreaList));
     }
 
-    public void addCardToFirstList(String title) {
+    public void addCardToList(String listName, String title) {
+        requireNonBlank(listName, "listName");
         requireNonBlank(title, "title");
+        By listContainer = By.xpath(
+                "//div[@data-testid='list'][.//h2[normalize-space()=" + asXpathLiteral(listName) + "]]"
+        );
+        By addCardInList = By.xpath(
+                "//div[@data-testid='list'][.//h2[normalize-space()=" + asXpathLiteral(listName) + "]]"
+                        + "//button[@data-testid='list-add-card-button']"
+        );
+        WebElement list = wait.until(ExpectedConditions.visibilityOfElementLocated(listContainer));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", list);
+        new Actions(driver).moveToElement(list).perform();
+        dismissOverlays();
         for (int attempt = 0; attempt < 3; attempt++) {
             try {
-                safeClick(addCardButton);
+                safeClick(addCardInList);
+                fillCardComposer(title);
+                return;
+            } catch (TimeoutException e) {
+                dismissOverlays();
+                if (attempt == 2) {
+                    throw e;
+                }
+            }
+        }
+    }
 
+    private void fillCardComposer(String title) {
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
                 WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(inputText));
                 try {
+                    input.click();
                     input.clear();
                     input.sendKeys(title);
                 } catch (ElementNotInteractableException e) {
                     ((JavascriptExecutor) driver).executeScript(
-                            "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
+                            "const el = arguments[0]; const value = arguments[1];"
+                                    + " if (el.isContentEditable) { el.textContent = value; } else { el.value = value; }"
+                                    + " el.dispatchEvent(new Event('input', { bubbles: true }));",
                             input,
                             title
                     );
                 }
 
                 safeClick(addCard);
-
                 wait.until(ExpectedConditions.visibilityOfElementLocated(cardByExactText(title)));
                 return;
             } catch (StaleElementReferenceException | TimeoutException e) {
                 if (attempt == 2) {
                     throw e;
                 }
-                wait.until(ExpectedConditions.refreshed(ExpectedConditions.presenceOfElementLocated(addCardButton)));
             }
         }
     }
@@ -181,6 +210,7 @@ public class BoardPage extends BasePage {
 
         safeClick(menuButton);
         safeClick(closeBoardButton);
+        wait.until(ExpectedConditions.elementToBeClickable(confirmCloseButton));
         safeClick(confirmCloseButton);
         safeClick(menuButton);
         safeClick(deleteBoardButton);
@@ -267,33 +297,6 @@ public class BoardPage extends BasePage {
             }
         }
         safeClick(completeCardButton);
-    }
-
-    public boolean isCompleteButtonSelected() {
-        WebElement completeButton = wait.until(ExpectedConditions.visibilityOfElementLocated(completeCardButton));
-        String ariaPressed = completeButton.getAttribute("aria-pressed");
-        String dataState = completeButton.getAttribute("data-state");
-        String ariaLabel = completeButton.getAttribute("aria-label");
-        String className = completeButton.getAttribute("class");
-        String buttonText = completeButton.getText();
-
-        return completeButton.isSelected()
-                || "true".equalsIgnoreCase(ariaPressed)
-                || "complete".equalsIgnoreCase(dataState)
-                || (className != null && className.toLowerCase().contains("checked"))
-                || containsCompletedState(ariaLabel)
-                || containsCompletedState(buttonText);
-    }
-
-    private boolean containsCompletedState(String value) {
-        if (value == null) {
-            return false;
-        }
-        String normalized = value.toLowerCase();
-        return normalized.contains("completed")
-                || normalized.contains("complete")
-                || normalized.contains("done")
-                || normalized.contains("checked");
     }
 
     public void archiveCard(String cardTitle) {

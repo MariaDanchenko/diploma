@@ -10,6 +10,9 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
+/**
+ * API contract tests use raw {@code given()} for Act/Assert; setup and cleanup use {@link BoardApiClient}.
+ */
 @Slf4j
 public class CrudTests extends BaseAPITest {
 
@@ -25,12 +28,15 @@ public class CrudTests extends BaseAPITest {
                 post("/boards/").
                 then().
                 statusCode(200).
-                body("name", equalTo(boardName)).
                 extract().response();
 
         String boardId = response.path("id");
-        log.info("Successfully created board with ID: {}", boardId);
-        api.deleteBoard(boardId);
+        try {
+            response.then().body("name", equalTo(boardName));
+            log.info("Successfully created board with ID: {}", boardId);
+        } finally {
+            api.deleteBoard(boardId);
+        }
     }
 
     @Test

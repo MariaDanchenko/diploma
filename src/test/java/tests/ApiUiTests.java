@@ -1,6 +1,7 @@
 package tests;
 
 import api.client.BoardApiClient;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
@@ -8,9 +9,8 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+@Slf4j
 public class ApiUiTests extends BaseTest {
 
     private final BoardApiClient api = new BoardApiClient();
@@ -88,19 +88,13 @@ public class ApiUiTests extends BaseTest {
         boardsToCleanup.remove(boardId);
     }
 
-    private String extractBoardShortLink(String boardUrl) {
-        Matcher matcher = Pattern.compile("/b/([^/]+)").matcher(boardUrl);
-        if (!matcher.find()) {
-            throw new IllegalStateException("Cannot extract board short link from URL: " + boardUrl);
-        }
-        return matcher.group(1);
-    }
-
     @AfterMethod(alwaysRun = true)
     public void cleanupBoards() {
         for (String boardId : new ArrayList<>(boardsToCleanup)) {
             try {
                 api.deleteBoard(boardId);
+            } catch (Exception e) {
+                log.error("Cleanup failed for boardId={}", boardId, e);
             } finally {
                 boardsToCleanup.remove(boardId);
             }

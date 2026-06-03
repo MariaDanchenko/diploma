@@ -16,6 +16,8 @@ import pages.LoginPage;
 import pages.TrelloHomePage;
 
 import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Listeners(Listener.class)
 public class BaseTest {
@@ -52,7 +54,7 @@ public class BaseTest {
             TrelloHomePage suiteTrelloHomePage = new TrelloHomePage(sharedDriver);
             sharedWait.until(ExpectedConditions.urlContains("trello.com"));
             sharedWait.until(driver -> suiteTrelloHomePage.isOnHomePage());
-            suiteTrelloHomePage.dismissBlockingOverlaysIfPresent();
+            suiteTrelloHomePage.dismissOverlays();
             isAuthenticated = true;
         }
     }
@@ -71,10 +73,21 @@ public class BaseTest {
             return;
         }
         try {
-            trelloHomePage.dismissBlockingOverlaysIfPresent();
+            if (!trelloHomePage.isOnHomePage()) {
+                driver.get("https://trello.com");
+            }
+            trelloHomePage.dismissOverlays();
         } catch (TimeoutException ignored) {
             // Continue test execution even if no overlay appeared.
         }
+    }
+
+    protected static String extractBoardShortLink(String url) {
+        Matcher matcher = Pattern.compile("/b/([^/]+)").matcher(url);
+        if (!matcher.find()) {
+            throw new IllegalStateException("Cannot extract board short link from URL: " + url);
+        }
+        return matcher.group(1);
     }
 
     @AfterSuite(alwaysRun = true)

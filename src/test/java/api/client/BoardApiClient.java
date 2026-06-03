@@ -93,6 +93,17 @@ public class BoardApiClient {
                 .path("id");
     }
 
+    public boolean isCardComplete(String cardId) {
+        Boolean dueComplete = given(spec)
+                .when()
+                .get("/cards/" + cardId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("dueComplete");
+        return Boolean.TRUE.equals(dueComplete);
+    }
+
     public record BoardData(String id, String url) {
     }
 }

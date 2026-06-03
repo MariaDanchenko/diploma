@@ -31,10 +31,6 @@ public class TrelloHomePage extends BasePage {
         super(driver, TestConfig.DEFAULT_WAIT);
     }
 
-    public void dismissBlockingOverlaysIfPresent() {
-        dismissOverlays();
-    }
-
     public boolean isOnHomePage() {
 
         return wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton)).isDisplayed();
@@ -50,7 +46,7 @@ public class TrelloHomePage extends BasePage {
     }
 
     public void openProfileMenu() {
-        dismissBlockingOverlaysIfPresent();
+        dismissOverlays();
         safeClick(profileButton);
     }
 
@@ -88,7 +84,7 @@ public class TrelloHomePage extends BasePage {
     public void goToHomePage() {
         driver.get("https://trello.com/");
         wait.until(ExpectedConditions.visibilityOfElementLocated(profileButton));
-        dismissBlockingOverlaysIfPresent();
+        dismissOverlays();
     }
 
     public void openCreateMenu() {
@@ -140,7 +136,7 @@ public class TrelloHomePage extends BasePage {
     }
 
     public void openInfo() {
-        dismissBlockingOverlaysIfPresent();
+        dismissOverlays();
         safeClick(infoButton);
     }
 

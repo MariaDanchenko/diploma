@@ -74,6 +74,7 @@ public class NavigationTests extends BaseTest {
             trelloHomePage.openSearchPage();
             trelloHomePage.search(SEARCH_TERM);
 
+            wait.until(driver -> trelloHomePage.isSearchResultRelevant(SEARCH_TERM));
             Assert.assertTrue(trelloHomePage.isSearchResultRelevant(SEARCH_TERM),
                     "Search results do not contain expected text");
         } finally {
@@ -84,7 +85,7 @@ public class NavigationTests extends BaseTest {
     @Test
     public void testSearchNonExistentText() {
         trelloHomePage.openSearchPage();
-        trelloHomePage.search("123");
+        trelloHomePage.search("NONEXISTENT_" + UUID.randomUUID());
 
         Assert.assertTrue(trelloHomePage.isNoSearchResults(), "Search returned results for non-existent text");
     }

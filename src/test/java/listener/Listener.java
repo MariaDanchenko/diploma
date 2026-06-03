@@ -31,12 +31,12 @@ public class Listener implements ITestListener {
             return;
         }
 
-        if (driver == null) {
+        if (driver == null || !(driver instanceof TakesScreenshot ts)) {
             log.warn("Skipping screenshot capture: driver unavailable for {}", result.getName());
             return;
         }
 
-        File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        File srcFile = ts.getScreenshotAs(OutputType.FILE);
         try (FileInputStream screenshot = new FileInputStream(srcFile)) {
             Allure.addAttachment(result.getName(), "image/png", screenshot, ".png");
             log.error("Test failed: {}.", result.getName(), result.getThrowable());

@@ -86,6 +86,8 @@ public abstract class BasePage {
         } catch (ElementClickInterceptedException e) {
             dismissOverlays();
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        } catch (StaleElementReferenceException e) {
+            throw e;
         }
     }
 

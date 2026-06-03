@@ -10,8 +10,6 @@ import pages.BoardPage;
 import pages.CreateBoardPage;
 
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 public class BoardsTests extends BaseTest {
@@ -25,7 +23,7 @@ public class BoardsTests extends BaseTest {
     public void testCreateBoard() {
         String boardName = "BoardsTests_" + UUID.randomUUID();
         driver.get("https://trello.com/");
-        trelloHomePage.dismissBlockingOverlaysIfPresent();
+        trelloHomePage.dismissOverlays();
         trelloHomePage.openCreateMenu();
         trelloHomePage.clickCreateBoard();
 
@@ -34,7 +32,8 @@ public class BoardsTests extends BaseTest {
         createBoardPage.clickCreateButton();
         boardPage = new BoardPage(driver);
 
-        String shortLink = extractBoardShortLink();
+        wait.until(driver1 -> driver1.getCurrentUrl().contains("/b/"));
+        String shortLink = extractBoardShortLink(driver.getCurrentUrl());
         boardId = api.getBoardIdByShortLink(shortLink);
 
         Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load after creation");
@@ -60,9 +59,9 @@ public class BoardsTests extends BaseTest {
         String listName = "ListApi_" + UUID.randomUUID();
         api.createList(boardId, listName);
         driver.navigate().refresh();
-
+        boardPage.dismissOverlays();
         wait.until(driver1 -> boardPage.isListExists(listName));
-        boardPage.addCardToFirstList(cardTitle);
+        boardPage.addCardToList(listName, cardTitle);
 
         wait.until(driver1 -> boardPage.isCardExists(cardTitle));
         Assert.assertTrue(boardPage.isCardExists(cardTitle), "Card is not visible on the board");
@@ -85,16 +84,6 @@ public class BoardsTests extends BaseTest {
         Assert.assertTrue(boardPage.isCardExists(updatedCardTitle), "Updated card is not visible on the board");
     }
 
-    private String extractBoardShortLink() {
-        wait.until(driver1 -> driver1.getCurrentUrl().contains("/b/"));
-        String currentUrl = driver.getCurrentUrl();
-        Matcher matcher = Pattern.compile("/b/([^/]+)").matcher(currentUrl);
-        if (!matcher.find()) {
-            throw new IllegalStateException("Cannot extract board short link from URL: " + currentUrl);
-        }
-        return matcher.group(1);
-    }
-
     @Test
     public void testDeleteBoard() {
         createBoardViaApiAndOpen();
@@ -115,6 +104,7 @@ public class BoardsTests extends BaseTest {
         driver.get(boardData.url());
         boardPage = new BoardPage(driver);
         Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
+        boardPage.dismissOverlays();
     }
 
     @AfterMethod

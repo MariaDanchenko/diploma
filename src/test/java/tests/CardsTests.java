@@ -28,7 +28,7 @@ public class CardsTests extends BaseTest {
         driver.get(boardData.url());
         boardPage = new BoardPage(driver);
         Assert.assertTrue(boardPage.isBoardLoaded(), "Board did not load");
-        trelloHomePage.dismissBlockingOverlaysIfPresent();
+        boardPage.dismissOverlays();
     }
 
     @AfterMethod(alwaysRun = true)
@@ -53,10 +53,11 @@ public class CardsTests extends BaseTest {
     public void testCompleteCard() {
         String cardTitle = "TestCompleteCard_" + UUID.randomUUID();
 
-        createCardViaApi(cardTitle);
+        String cardId = createCardViaApi(cardTitle);
         boardPage.completeCard(cardTitle);
 
-        Assert.assertTrue(boardPage.isCompleteButtonSelected(), "Complete button is not in selected state");
+        wait.until(driver -> api.isCardComplete(cardId));
+        Assert.assertTrue(api.isCardComplete(cardId), "Card completion not persisted to backend");
     }
 
     @Test
@@ -69,9 +70,10 @@ public class CardsTests extends BaseTest {
         Assert.assertTrue(boardPage.isCardAbsentFromBoard(cardTitle), "Archived card is still visible on board");
     }
 
-    private void createCardViaApi(String cardTitle) {
-        api.createCard(toDoListId, cardTitle);
+    private String createCardViaApi(String cardTitle) {
+        String cardId = api.createCard(toDoListId, cardTitle);
         driver.navigate().refresh();
-        trelloHomePage.dismissBlockingOverlaysIfPresent();
+        boardPage.dismissOverlays();
+        return cardId;
     }
 }
